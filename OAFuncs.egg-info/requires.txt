@@ -1,3 +1,6 @@
-netCDF4
+matplotlib
 numpy
+scipy
 xarray
+Cartopy
+netCDF4

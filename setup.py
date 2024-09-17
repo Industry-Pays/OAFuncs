@@ -18,14 +18,20 @@ URL = 'https://github.com/Industry-Pays/OAFuncs'
 EMAIL = '16031215@qq.com'
 AUTHOR = 'Kun Liu'
 REQUIRES_PYTHON = '>=3.10.0'
-VERSION = '0.0.5'
+VERSION = '0.0.6'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
+    # cmap
+    "matplotlib",
+    "numpy",
+    # data
+    "scipy",
+    # draw
+    "xarray",
+    "Cartopy",
     # nc
     "netCDF4",
-    "numpy",
-    "xarray",
     # file
 ]
 
@@ -107,7 +113,7 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=["nc", "file"]),
+    packages=find_packages(exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_nc", "oa_*"]),
     # packages=find_packages(exclude=["nc", "file", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
