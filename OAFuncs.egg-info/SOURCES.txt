@@ -1,0 +1,12 @@
+LICENSE.txt
+README.md
+setup.py
+OAFuncs/OAFuncs.py
+OAFuncs/__init__.py
+OAFuncs/file.py
+OAFuncs/nc.py
+OAFuncs.egg-info/PKG-INFO
+OAFuncs.egg-info/SOURCES.txt
+OAFuncs.egg-info/dependency_links.txt
+OAFuncs.egg-info/requires.txt
+OAFuncs.egg-info/top_level.txt
