@@ -6,14 +6,38 @@ Python Function
 
 <mark>注</mark>：若有需求，可邮件至`16031215@qq.com`，能力范围内可考虑实现
 
+## PyPI
+
+```html
+https://pypi.org/project/OAFuncs/0.0.8/
+```
+
+## Github
+
+```html
+https://github.com/Industry-Pays/OAFuncs
+```
+
 ## Example
 
 ```python
 import numpy as np
 from OAFuncs import oa_nc
+# or
+import OAFuncs
+
+# OAFuncs.oa_cmap.*
+# OAFuncs.oa_data.*
+# OAFuncs.oa_draw.*
+# OAFuncs.oa_file.*
+# OAFuncs.oa_nc.*
 
 data = np.random.rand(100, 50)
 oa_nc.write2nc(r'I:\test.nc', data,
+         'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')
+
+# or
+OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
          'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')
 ```
 
@@ -253,8 +277,6 @@ plot_quiver(u, v, lon, lat, picname=None, cmap='coolwarm', scale=0.25, width=0.0
 
 
 plot_contourf_cartopy(data, lon, lat, picname=None, cmap='rainbow', cn_fill_num=20, fig_size=(12, 9), title='Cartopy', land_color='green', ocean_color='lightgrey')
-
-
 ```
 
 ## 4 oa_file
