@@ -130,13 +130,13 @@ cmap_color = create_5rgb_txt('E:/python/colorbar/test.txt')
 
 ### 2.1 description
 
-对数据进行处理，目前主要提供二维及以上数据的水平二维插值。
+对数据进行处理，目前主要提供二维及以上数据的水平二维插值。（2D~4D）
 
 ### 2.2 `interp_2d(target_x, target_y, origin_x, origin_y, data, method='linear')`
 
 #### 描述
 
-高维插值函数，默认对数据的最后两个维度进行插值。该函数适用于二维和三维空间数据的插值，不使用并行计算。
+高维插值函数，默认对数据的最后两个维度进行插值。该函数适用于二维~四维空间数据的插值，不使用并行计算。
 
 #### 参数
 
@@ -144,7 +144,7 @@ cmap_color = create_5rgb_txt('E:/python/colorbar/test.txt')
 - `target_y` (array-like): 目标经度网格，可以是1D或2D数组。
 - `origin_x` (array-like): 初始纬度网格，与原始数据形状匹配的1D或2D数组。
 - `origin_y` (array-like): 初始经度网格，与原始数据形状匹配的1D或2D数组。
-- `data` (array-like): 待插值的数据，形状为(*, lat, lon)，其中*可以是任意维度。
+- `data` (array-like): 待插值的数据，形状为(*, lat, lon)，其中`*`可以是任意1~2D。
 - `method` (str, optional): 插值方法，默认为'linear'。可选值还包括'nearest', 'cubic'等。
 
 #### 返回
@@ -191,7 +191,7 @@ plt.show()
 - `target_y` (array-like): 目标经度网格，可以是1D或2D数组。
 - `origin_x` (array-like): 初始纬度网格，与原始数据形状匹配的1D或2D数组。
 - `origin_y` (array-like): 初始经度网格，与原始数据形状匹配的1D或2D数组。
-- `data` (array-like): 待插值的数据，形状为(*, lat, lon)，其中*可以是任意维度。
+- `data` (array-like): 待插值的数据，形状为(*, lat, lon)，其中`*`可以是任意维度。
 - `method` (str, optional): 插值方法，默认为'linear'。可选值还包括'nearest', 'cubic'等。
 
 #### 返回
@@ -233,6 +233,29 @@ plt.show()
 一些简单的绘图函数，由于绘图需要高度自定义，所以这部分仅作为速览。
 
 ### 3.2 等待优化再写
+
+目前已有部分函数，可自行尝试
+
+```python
+create_gif(image_list: list, gif_name: str, duration=0.2)
+
+
+xy2lonlat(xy, lonlat='lon', decimal=2)
+
+
+plot_contourf(pic_data, picname=None, c_map='rainbow', minmax=None, labels=None, ticks_space=None, ticks=None, figsize=(12, 9))
+
+
+plot_contourf_lonlat(data, lon, lat, interval=5, picname=None, c_map='rainbow')
+
+
+plot_quiver(u, v, lon, lat, picname=None, cmap='coolwarm', scale=0.25, width=0.002, x_space=5, y_space=5)
+
+
+plot_contourf_cartopy(data, lon, lat, picname=None, cmap='rainbow', cn_fill_num=20, fig_size=(12, 9), title='Cartopy', land_color='green', ocean_color='lightgrey')
+
+
+```
 
 ## 4 oa_file
 
@@ -430,8 +453,6 @@ remove_file(r'E:\Code\Python\Model\WRF\Radar2\bzip2-radar-0*')
 os.chdir(r'E:\Code\Python\Model\WRF\Radar2')
 remove_file('bzip2-radar-0*')
 ```
-
-
 
 ## 5 oa_nc
 
