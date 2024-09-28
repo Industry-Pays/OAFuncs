@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 17:26:11
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-09-17 18:04:59
+LastEditTime: 2024-09-28 17:19:12
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_draw.py
 Description:  
 EditPlatform: vscode
@@ -177,16 +177,6 @@ def plot_contourf(pic_data, picname=None, c_map='rainbow', minmax=None, labels=N
     plt.title('Min: {:.3g}, Max: {:.3g}'.format(
         pic_data.min(), pic_data.max()))
 
-    # 获取等高线图的最大最小值以及位置
-    # zmax = np.max(contour.collections[0].get_array())
-    # zmin = np.min(contour.collections[0].get_array())
-    # zmax = pic_data.max()
-    # zmin = pic_data.min()
-    # xmax, ymax = x[pic_data==zmax][0], y[pic_data==zmax][0]
-    # xmin, ymin = x[pic_data==zmin][0], y[pic_data==zmin][0]
-    # 标记最大最小值
-    # ax.text(xmax, ymax, 'Max: %.3g' %zmax, ha='center', va='center')
-    # ax.text(xmin, ymin, 'Min: %.3g' %zmin, ha='center', va='center')
     plt.savefig(
         picname, bbox_inches='tight') if picname is not None else plt.show()
     # plt.show()
@@ -225,10 +215,6 @@ def plot_contourf_lonlat(data, lon, lat, interval=5, picname=None, c_map='rainbo
                format_longitude(lon[i]) for i in range(0, len(lon), x_space)])
     plt.yticks(np.arange(0, len(lat), y_space), [
                format_latitude(lat[i]) for i in range(0, len(lat), y_space)])
-    """ x_space = (len(lon) * interval / (lon[-1] - lon[0]))
-    y_space = (len(lat) * interval / (lat[-1] - lat[0]))
-    plt.xticks(np.arange(0, len(lon), x_space), [format_longitude(i) for i in np.arange(lon[0], lon[-1], interval)])
-    plt.yticks(np.arange(0, len(lat), y_space), [format_latitude(i) for i in np.arange(lat[0], lat[-1], interval)]) """
     plt.colorbar()
     plt.savefig(
         picname, bbox_inches='tight') if picname is not None else plt.show()

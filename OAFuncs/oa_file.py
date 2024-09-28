@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 15:07:13
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-09-17 17:09:43
+LastEditTime: 2024-09-28 17:34:09
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_file.py
 Description:  
 EditPlatform: vscode
@@ -17,97 +17,6 @@ import glob
 import os
 import re
 import shutil
-
-
-# ** 创建一系列子文件夹（可选清空）
-def mk_path(pictpath: str, vars_name: str, clear=1) -> list:
-    pictpaths = []
-    for i in range(len(vars_name)):
-        pictpaths.append(os.path.join(pictpath, vars_name[i]))
-        if clear:
-            shutil.rmtree(pictpaths[i], ignore_errors=True)
-        os.makedirs(pictpaths[i], exist_ok=True)
-    return pictpaths
-
-# ** 删除空文件夹
-
-
-def remove_empty_folders(path, print_info=0):
-    # 遍历当前目录下的所有文件夹和文件
-    for root, dirs, files in os.walk(path, topdown=False):
-        # 遍历文件夹列表
-        for folder in dirs:
-            folder_path = os.path.join(root, folder)
-            # 判断文件是否有权限访问
-            try:
-                os.listdir(folder_path)
-            except OSError:
-                continue
-            # 判断文件夹是否为空
-            if not os.listdir(folder_path):
-                # 删除空文件夹
-                try:
-                    os.rmdir(folder_path)
-                    print(f"Deleted empty folder: {folder_path}")
-                except OSError:
-                    if print_info:
-                        print(f"Skipping protected folder: {folder_path}")
-                    pass
-
-# ** 删除相关文件，可使用通配符
-
-
-def remove_file(pattern):
-    '''
-    remove_file(r'E:\Code\Python\Model\WRF\Radar2\bzip2-radar-0*')
-    # or
-    os.chdir(r'E:\Code\Python\Model\WRF\Radar2')
-    remove_file('bzip2-radar-0*')
-    '''
-    # 使用glob.glob来获取所有匹配的文件
-    # 可以使用通配符*来匹配所有文件
-    file_list = glob.glob(pattern)
-    for file_path in file_list:
-        if os.path.exists(file_path):
-            try:
-                os.remove(file_path)
-                print(f'成功删除文件: {file_path}')
-            except Exception as e:
-                print(f'删除文件失败: {file_path}')
-                print(e)
-
-# ** 清空文件夹
-
-
-def clear_folder(folder_path):
-    if os.path.exists(folder_path):
-        try:
-            # 遍历文件夹中的所有文件和子文件夹
-            for filename in os.listdir(folder_path):
-                file_path = os.path.join(folder_path, filename)
-                # 判断是文件还是文件夹
-                if os.path.isfile(file_path) or os.path.islink(file_path):
-                    os.unlink(file_path)  # 删除文件或链接
-                elif os.path.isdir(file_path):
-                    shutil.rmtree(file_path)  # 删除子文件夹
-            print(f'成功清空文件夹: {folder_path}')
-        except Exception as e:
-            print(f'清空文件夹失败: {folder_path}')
-            print(e)
-
-# ** 删除文件夹
-
-
-def remove_folder(folder_path):
-    if os.path.exists(folder_path):
-        try:
-            shutil.rmtree(folder_path)
-            print(f'成功删除文件夹: {folder_path}')
-        except Exception as e:
-            print(f'删除文件夹失败: {folder_path}')
-            print(e)
-    else:
-        print(f'文件夹不存在: {folder_path}')
 
 
 def link_file(src_pattern, dst):
@@ -229,8 +138,93 @@ def rename_files(directory, old_str, new_str):
             print(f"重命名文件: {old_path} -> {new_path}")
 
 
+# ** 创建子文件夹（可选清空）
+def make_folder(rootpath: str, folder_name: str, clear=0) -> str:
+    folder_path = os.path.join(str(rootpath), str(folder_name))
+    if clear:
+        shutil.rmtree(folder_path, ignore_errors=True)
+    os.makedirs(folder_path, exist_ok=True)
+    return folder_path
+
+# ** 清空文件夹
+
+
+def clear_folder(folder_path):
+    if os.path.exists(folder_path):
+        try:
+            # 遍历文件夹中的所有文件和子文件夹
+            for filename in os.listdir(folder_path):
+                file_path = os.path.join(folder_path, filename)
+                # 判断是文件还是文件夹
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)  # 删除文件或链接
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)  # 删除子文件夹
+            print(f'成功清空文件夹: {folder_path}')
+        except Exception as e:
+            print(f'清空文件夹失败: {folder_path}')
+            print(e)
+
+
+# ** 删除文件夹
+def remove_folder(folder_path):
+    if os.path.exists(folder_path):
+        try:
+            shutil.rmtree(folder_path)
+            print(f'成功删除文件夹: {folder_path}')
+        except Exception as e:
+            print(f'删除文件夹失败: {folder_path}')
+            print(e)
+    else:
+        print(f'文件夹不存在: {folder_path}')
+
+
+# ** 清理空文件夹
+def remove_empty_folders(path, print_info=1):
+    # 遍历当前目录下的所有文件夹和文件
+    for root, dirs, files in os.walk(path, topdown=False):
+        # 遍历文件夹列表
+        for folder in dirs:
+            folder_path = os.path.join(root, folder)
+            # 判断文件是否有权限访问
+            try:
+                os.listdir(folder_path)
+            except OSError:
+                continue
+            # 判断文件夹是否为空
+            if not os.listdir(folder_path):
+                # 删除空文件夹
+                try:
+                    os.rmdir(folder_path)
+                    print(f"Deleted empty folder: {folder_path}")
+                except OSError:
+                    if print_info:
+                        print(f"Skipping protected folder: {folder_path}")
+                    pass
+
+# ** 删除相关文件，可使用通配符
+
+
+def remove_file(pattern):
+    '''
+    remove_file(r'E:\Code\Python\Model\WRF\Radar2\bzip2-radar-0*')
+    # or
+    os.chdir(r'E:\Code\Python\Model\WRF\Radar2')
+    remove_file('bzip2-radar-0*')
+    '''
+    # 使用glob.glob来获取所有匹配的文件
+    # 可以使用通配符*来匹配所有文件
+    file_list = glob.glob(pattern)
+    for file_path in file_list:
+        if os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+                print(f'成功删除文件: {file_path}')
+            except Exception as e:
+                print(f'删除文件失败: {file_path}')
+                print(e)
+
+
 if __name__ == '__main__':
-    pictpath = 'D:/Data/2024/09/17/'
-    vars_name = ['var1', 'var2']
-    pictpaths = mk_path(pictpath, vars_name, clear=1)
-    print(pictpaths)
+    newpath = make_folder('D:/Data/2024/09/17/', 'var1', clear=1)
+    print(newpath)
