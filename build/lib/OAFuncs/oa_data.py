@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 17:12:47
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-09-28 17:09:26
+LastEditTime: 2024-10-06 19:05:38
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_data.py
 Description:  
 EditPlatform: vscode
@@ -14,12 +14,14 @@ Python Version: 3.11
 '''
 
 
+
 import multiprocessing as mp
 from concurrent.futures import ThreadPoolExecutor
 
 import numpy as np
 from scipy.interpolate import griddata
 
+__all__ = ['interp_2d', 'interp_2d_parallel']
 
 # ** 高维插值函数，插值最后两个维度
 def interp_2d(target_x, target_y, origin_x, origin_y, data, method='linear'):

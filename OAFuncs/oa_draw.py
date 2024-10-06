@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 17:26:11
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-09-28 17:19:12
+LastEditTime: 2024-10-06 19:10:45
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_draw.py
 Description:  
 EditPlatform: vscode
@@ -25,7 +25,13 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+
+__all__ = ['create_gif', 'xy2lonlat', 'plot_contourf',
+           'plot_contourf_lonlat', 'plot_quiver', 'plot_contourf_cartopy']
+
 warnings.filterwarnings('ignore')
+
+
 
 # ** 将生成图片/已有图片制作成动图
 def create_gif(image_list: list, gif_name: str, duration=0.2):  # 制作动图，默认间隔0.2
@@ -80,7 +86,7 @@ def xy2lonlat(xy, lonlat='lon', decimal=2):
 
 
 # ** 设置colorbar格式
-class MyFormatter(mpl.ticker.ScalarFormatter):
+class _MyFormatter(mpl.ticker.ScalarFormatter):
     def __init__(self, cticks, fmt=None, useOffset=True, useMathText=True):
         mpl.ticker.ScalarFormatter.__init__(self, useOffset, useMathText)
         self.cticks = cticks
@@ -161,7 +167,7 @@ def plot_contourf(pic_data, picname=None, c_map='rainbow', minmax=None, labels=N
     # print(class_cticks)
     cct = abs(class_cticks[class_cticks != 0])
     if (min(cct) < 1e-2) or max(cct) > 1e4:  # 判断是否需要采用科学计数法
-        cb.formatter = MyFormatter(class_cticks)
+        cb.formatter = _MyFormatter(class_cticks)
         cb.update_ticks()
 
     if labels is not None:

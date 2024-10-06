@@ -9,7 +9,7 @@ Python Function
 ## PyPI
 
 ```html
-https://pypi.org/project/OAFuncs/0.0.8/
+https://pypi.org/project/OAFuncs
 ```
 
 ## Github
@@ -21,9 +21,6 @@ https://github.com/Industry-Pays/OAFuncs
 ## Example
 
 ```python
-import numpy as np
-from OAFuncs import oa_nc
-# or
 import OAFuncs
 
 # OAFuncs.oa_cmap.*
@@ -31,6 +28,34 @@ import OAFuncs
 # OAFuncs.oa_draw.*
 # OAFuncs.oa_file.*
 # OAFuncs.oa_nc.*
+# OAFuncs.oa_help.*
+
+# 查询当前所有可用函数
+OAFuncs.oa_help.query()
+# 根据函数名获取使用方法
+OAFuncs.oa_help.use('get_var')
+```
+
+```shell
+# 2024/10/06更新
+函数数量：
+25
+函数列表：
+['clear_folder', 'copy_file', 'create_5rgb_txt', 'create_custom', 'create_diverging', 'create_gif', 'extract5nc', 'extract_colors', 'get_var', 'interp_2d', 'interp_2d_parallel', 'link_file', 'make_folder', 'plot_contourf', 'plot_contourf_cartopy', 'plot_contourf_lonlat', 'plot_quiver', 'query', 'remove', 'remove_empty_folders', 'rename_files', 'show', 'use', 'write2nc', 'xy2lonlat']
+模块全路径：
+OAFuncs.oa_nc.get_var
+函数提示：
+datas_ecm = get_var(file_ecm, 'h', 't', 'u', 'v')
+
+# 实际全路径：
+datas_ecm = OAFuncs.oa_nc.get_var(file_ecm, 'h', 't', 'u', 'v')
+```
+
+```python
+import numpy as np
+from OAFuncs import oa_nc
+# or
+import OAFuncs
 
 data = np.random.rand(100, 50)
 oa_nc.write2nc(r'I:\test.nc', data,
@@ -113,7 +138,7 @@ c_map = create_custom(['aliceblue','skyblue','deepskyblue'], [0.0, 0.5, 1.0])
 
 #### 描述
 
-创建双色diverging型颜色映射（cmap），默认中间为白色。
+创建双色diverging型颜色映射（cmap），当传入颜色为偶数时，默认中间为白色。
 
 #### 参数
 
@@ -147,7 +172,15 @@ diverging_cmap = create_diverging(
 #### 示例
 
 ```python
-cmap_color = create_5rgb_txt('E:/python/colorbar/test.txt')
+cmap_color = create_5rgb_txt('./test.txt')
+```
+
+RGB.txt格式：
+
+```textile
+50,54,156
+...
+255,255,255
 ```
 
 ## 2 oa_data
@@ -405,29 +438,7 @@ folder_to_clear = "/path/to/folder"
 clear_folder(folder_to_clear)
 ```
 
-### 4.7 `remove_folder(folder_path)`
-
-#### 描述
-
-删除指定路径的文件夹及其包含的所有内容。
-
-#### 参数
-
-- `folder_path`：需要删除的文件夹路径，字符串类型。
-
-#### 返回
-
-该函数没有返回值
-
-#### 示例
-
-```python
-# 调用函数
-folder_to_remove = "/path/to/folder"
-remove_folder(folder_to_remove)
-```
-
-### 4.8 `remove_empty_folders(path, print_info=1)`
+### 4.7 `remove_empty_folders(path, print_info=1)`
 
 #### 描述
 
@@ -450,7 +461,7 @@ path_to_check = "/path/to/directory"
 remove_empty_folders(path_to_check)
 ```
 
-### 4.9 `remove_file(pattern)`
+### 4.8 `remove(pattern)`
 
 #### 描述
 
@@ -469,11 +480,11 @@ remove_empty_folders(path_to_check)
 ```python
 # 调用函数
 # 使用绝对路径
-remove_file(r'E:\Code\Python\Model\WRF\Radar2\bzip2-radar-0*')
+remove(r'E:\Code\Python\Model\WRF\Radar2\bzip2-radar-0*')
 
 # 或者先切换到目标目录，再使用相对路径
 os.chdir(r'E:\Code\Python\Model\WRF\Radar2')
-remove_file('bzip2-radar-0*')
+remove('bzip2-radar-0*')
 ```
 
 ## 5 oa_nc

@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 15:07:13
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-09-28 17:34:09
+LastEditTime: 2024-10-06 19:00:51
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_file.py
 Description:  
 EditPlatform: vscode
@@ -13,11 +13,15 @@ SystemInfo: Windows 11
 Python Version: 3.11
 '''
 
+
+
 import glob
 import os
 import re
 import shutil
 
+__all__ = ['link_file', 'copy_file', 'rename_files', 'make_folder',
+           'clear_folder', 'remove_empty_folders', 'remove']
 
 def link_file(src_pattern, dst):
     '''
@@ -147,9 +151,8 @@ def make_folder(rootpath: str, folder_name: str, clear=0) -> str:
     return folder_path
 
 # ** 清空文件夹
-
-
 def clear_folder(folder_path):
+    folder_path = str(folder_path)
     if os.path.exists(folder_path):
         try:
             # 遍历文件夹中的所有文件和子文件夹
@@ -166,21 +169,9 @@ def clear_folder(folder_path):
             print(e)
 
 
-# ** 删除文件夹
-def remove_folder(folder_path):
-    if os.path.exists(folder_path):
-        try:
-            shutil.rmtree(folder_path)
-            print(f'成功删除文件夹: {folder_path}')
-        except Exception as e:
-            print(f'删除文件夹失败: {folder_path}')
-            print(e)
-    else:
-        print(f'文件夹不存在: {folder_path}')
-
-
 # ** 清理空文件夹
 def remove_empty_folders(path, print_info=1):
+    path = str(path)
     # 遍历当前目录下的所有文件夹和文件
     for root, dirs, files in os.walk(path, topdown=False):
         # 遍历文件夹列表
@@ -202,29 +193,34 @@ def remove_empty_folders(path, print_info=1):
                         print(f"Skipping protected folder: {folder_path}")
                     pass
 
+
 # ** 删除相关文件，可使用通配符
-
-
-def remove_file(pattern):
+def remove(pattern):
     '''
-    remove_file(r'E:\Code\Python\Model\WRF\Radar2\bzip2-radar-0*')
+    remove(r'E:\Code\Python\Model\WRF\Radar2\bzip2-radar-0*')
     # or
     os.chdir(r'E:\Code\Python\Model\WRF\Radar2')
-    remove_file('bzip2-radar-0*')
+    remove('bzip2-radar-0*')
     '''
     # 使用glob.glob来获取所有匹配的文件
     # 可以使用通配符*来匹配所有文件
+    pattern = str(pattern)
     file_list = glob.glob(pattern)
     for file_path in file_list:
         if os.path.exists(file_path):
             try:
-                os.remove(file_path)
+                shutil.rmtree(file_path)
                 print(f'成功删除文件: {file_path}')
             except Exception as e:
                 print(f'删除文件失败: {file_path}')
                 print(e)
+        else:
+            print(f'文件不存在: {file_path}')
 
 
 if __name__ == '__main__':
-    newpath = make_folder('D:/Data/2024/09/17/', 'var1', clear=1)
-    print(newpath)
+    # newpath = make_folder('D:/Data/2024/09/17/', 'var1', clear=1)
+    # print(newpath)
+    pass
+
+    remove(r'I:\Delete\test\*')

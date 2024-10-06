@@ -4,8 +4,8 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 14:58:50
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-09-17 15:05:44
-FilePath: \\Python\\My_Funcs\\OAFuncs\\nc.py
+LastEditTime: 2024-10-06 19:11:30
+FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_nc.py
 Description:  
 EditPlatform: vscode
 ComputerInfo: XPS 15 9510
@@ -13,13 +13,19 @@ SystemInfo: Windows 11
 Python Version: 3.11
 '''
 
+
+
 import netCDF4 as nc
 import os
 import numpy as np
 import xarray as xr
 
+__all__ = ['get_var', 'extract5nc', 'write2nc']
 
 def get_var(file, *vars):
+    '''
+    datas_ecm = get_var(file_ecm, 'h', 't', 'u', 'v')
+    '''
     ds = xr.open_dataset(file)
     datas = []
     for var in vars:
@@ -44,7 +50,7 @@ def extract5nc(file, varname):
     return np.array(vardata), dimdict
 
 
-def numpy_to_nc_type(numpy_type):
+def _numpy_to_nc_type(numpy_type):
     """将NumPy数据类型映射到NetCDF数据类型"""
     numpy_to_nc = {
         'float32': 'f4',
@@ -100,7 +106,7 @@ def write2nc(file, data, varname, coords, mode):
             if add_coords:
                 # 创建新坐标
                 ncfile.createDimension(dim, len(coord_data))
-                ncfile.createVariable(dim, numpy_to_nc_type(
+                ncfile.createVariable(dim, _numpy_to_nc_type(
                     coord_data.dtype), (dim,))
                 ncfile.variables[dim][:] = np.array(coord_data)
 
@@ -122,7 +128,7 @@ def write2nc(file, data, varname, coords, mode):
             # 创建变量及其维度
             dim_names = tuple(coords.keys())  # 使用coords传入的维度名称
             ncfile.createVariable(
-                varname, numpy_to_nc_type(data.dtype), dim_names)
+                varname, _numpy_to_nc_type(data.dtype), dim_names)
             # ncfile.createVariable('data', 'f4', ('time','lev'))
 
             # 写入数据

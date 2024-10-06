@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 16:55:11
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-09-22 17:15:00
+LastEditTime: 2024-10-06 19:34:57
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_cmap.py
 Description:  
 EditPlatform: vscode
@@ -14,10 +14,13 @@ Python Version: 3.11
 '''
 
 
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
+__all__ = ['show', 'extract_colors', 'create_custom',
+           'create_diverging', 'create_5rgb_txt']
 
 # ** 将cmap用填色图可视化（官网摘抄函数）
 def show(colormaps: list):
@@ -40,6 +43,12 @@ def show(colormaps: list):
 
 # ** 将cmap转为list，即多个颜色的列表
 def extract_colors(cmap, n=256):
+    '''
+    cmap        : cmap名称
+    n           : 提取颜色数量
+    return      : 提取的颜色列表
+    example     : out_cmap = extract_colors('viridis', 256)
+    '''
     c_map = mpl.colormaps.get_cmap(cmap)
     out_cmap = [c_map(i) for i in np.linspace(0, 1, n)]
     return out_cmap

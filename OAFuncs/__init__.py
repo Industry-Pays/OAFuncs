@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 16:09:20
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-09-17 16:10:37
+LastEditTime: 2024-10-06 19:43:24
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\__init__.py
 Description:  
 EditPlatform: vscode
@@ -13,4 +13,10 @@ SystemInfo: Windows 11
 Python Version: 3.11
 '''
 
-from OAFuncs import *
+# 会导致OAFuncs直接导入所有函数，不符合模块化设计
+from .oa_cmap import *
+from .oa_data import *
+from .oa_draw import *
+from .oa_file import *
+from .oa_nc import *
+from .oa_help import *

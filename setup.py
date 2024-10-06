@@ -9,7 +9,7 @@ import os
 import sys
 from shutil import rmtree
 
-from setuptools import find_packages, setup, Command
+from setuptools import Command, find_packages, setup
 
 # Package meta-data.
 NAME = 'OAFuncs'
@@ -17,8 +17,8 @@ DESCRIPTION = 'My short description for my project.'
 URL = 'https://github.com/Industry-Pays/OAFuncs'
 EMAIL = '16031215@qq.com'
 AUTHOR = 'Kun Liu'
-REQUIRES_PYTHON = '>=3.10.0'
-VERSION = '0.0.8'
+REQUIRES_PYTHON = '>=3.9.0'
+VERSION = '0.0.33'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -90,14 +90,15 @@ class UploadCommand(Command):
             pass
 
         self.status('Building Source and Wheel (universal) distribution…')
-        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
+        os.system(
+            '{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
 
         self.status('Uploading the package to PyPI via Twine…')
         os.system('twine upload dist/*')
 
-        #self.status('Pushing git tags…')
-        #os.system('git tag v{0}'.format(about['__version__']))
-        #os.system('git push --tags')
+        # self.status('Pushing git tags…')
+        # os.system('git tag v{0}'.format(about['__version__']))
+        # os.system('git push --tags')
 
         sys.exit()
 
@@ -113,7 +114,8 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_nc", "oa_*"]),
+    packages=find_packages(
+        exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_nc", "oa_help", "oa_*"]),
     # packages=find_packages(exclude=["nc", "file", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
@@ -131,6 +133,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
