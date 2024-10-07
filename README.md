@@ -4,6 +4,14 @@
 
 Python Function
 
+地学领域，一些常用操作！
+
+只是方便日常使用，将一些复杂的操作集成到通用函数
+
+代码会不定期优化更新，或增或删或改...
+
+已有功能不会完全删除，可能是换了个函数名，或者优化了参数传递等...
+
 <mark>注</mark>：若有需求，可邮件至`16031215@qq.com`，能力范围内可考虑实现
 
 ## PyPI
@@ -64,6 +72,17 @@ oa_nc.write2nc(r'I:\test.nc', data,
 # or
 OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
          'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')
+```
+
+## 依赖库
+
+```shell
+"matplotlib"
+"numpy"
+"scipy"
+"xarray"
+"Cartopy"
+"netCDF4"
 ```
 
 ## 1 `oa_cmap`
