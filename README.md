@@ -74,6 +74,94 @@ OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
          'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')
 ```
 
+## 结构
+
+- **OAFuncs**
+  - oa_cmap
+    - show
+      
+      展示cmap效果
+    - extract_colors
+      
+      将cmap拆分成颜色列表
+    - create_custom
+      
+      自定义cmap，可提供颜色位置
+    - create_diverging
+      
+      等比例两端型cmap
+    - create_5rgb_txt
+      
+      基于RGB文件制作cmap
+  - oa_data
+    - interp_2d
+      
+      二维插值
+    - interp_2d_parallel
+      
+      二维插值，并行加速
+  - oa_draw
+    - create_gif
+      
+      制作动图
+    - xy2lonlat
+      
+      将数字转化为经/纬度字符串
+    - plot_contourf
+      
+      粗略绘制填色图
+    - plot_contourf_lonlat
+      
+      填色图叠加经纬度
+    - plot_contourf_cartopy
+      
+      填色图加海陆线
+    - plot_quiver
+      
+      矢量图
+  - oa_file
+    - link_file
+      
+      链接文件
+    - copy_file
+      
+      复制文件
+    - rename_files
+      
+      按一定规则重命名文件（可多个）
+    - make_folder
+      
+      在指定路径下创建文件夹
+    - clear_folder
+      
+      清空文件夹
+    - remove_empty_folders
+      
+      删除路径下所有空的文件夹
+    - remove
+      
+      删除文件/文件夹
+  - oa_help
+    - query
+      
+      查询本库所有可用函数
+    - use
+      
+      获取函数路径、函数说明
+  - oa_nc
+    - get_var
+      
+      批量提取nc文件变量
+    - extract5nc
+      
+      从nc文件中提取变量，包含所有坐标值
+    - write2nc
+      
+      便捷将数据写入nc文件
+      - 
+
+
+
 ## 依赖库
 
 ```shell
