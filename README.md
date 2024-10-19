@@ -45,9 +45,9 @@ OAFuncs.oa_help.use('get_var')
 ```
 
 ```shell
-# 2024/10/06更新
+# 2024/10/14更新
 函数数量：
-25
+27
 函数列表：
 ['clear_folder', 'copy_file', 'create_5rgb_txt', 'create_custom', 'create_diverging', 'create_gif', 'extract5nc', 'extract_colors', 'get_var', 'interp_2d', 'interp_2d_parallel', 'link_file', 'make_folder', 'plot_contourf', 'plot_contourf_cartopy', 'plot_contourf_lonlat', 'plot_quiver', 'query', 'remove', 'remove_empty_folders', 'rename_files', 'show', 'use', 'write2nc', 'xy2lonlat']
 模块全路径：

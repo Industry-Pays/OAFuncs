@@ -18,7 +18,7 @@ URL = 'https://github.com/Industry-Pays/OAFuncs'
 EMAIL = '16031215@qq.com'
 AUTHOR = 'Kun Liu'
 REQUIRES_PYTHON = '>=3.9.0'
-VERSION = '0.0.33'
+VERSION = '0.0.41'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -33,6 +33,10 @@ REQUIRED = [
     # nc
     "netCDF4",
     # file
+    # sign
+    "requests",
+    "bs4",
+    "rich",
 ]
 
 # What packages are optional?
@@ -115,7 +119,7 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(
-        exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_nc", "oa_help", "oa_*"]),
+        exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_help", "oa_nc", "oa_python", "oa_sign", "oa_*"]),
     # packages=find_packages(exclude=["nc", "file", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
