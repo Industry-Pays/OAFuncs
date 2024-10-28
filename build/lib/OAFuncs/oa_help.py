@@ -17,6 +17,10 @@ import OAFuncs
 
 
 def query():
+    '''
+    description: 查看OAFuncs模块的函数列表
+    example: query()
+    '''
     funcs = [func for func in dir(OAFuncs) if callable(getattr(OAFuncs, func))]
     print('函数数量：')
     print(len(funcs))
@@ -25,6 +29,11 @@ def query():
 
 
 def use(func='get_var'):
+    '''
+    description: 查看函数的模块全路径和函数提示
+    param {func} : 函数名
+    example: use('get_var')
+    '''
     print('模块全路径：')
     print(getattr(OAFuncs, func).__module__+'.'+func)
     print('函数提示：')

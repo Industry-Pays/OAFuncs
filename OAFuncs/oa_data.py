@@ -92,6 +92,17 @@ def interp_2d(target_x, target_y, origin_x, origin_y, data, method='linear'):
 # ** 高维插值函数，插值最后两个维度，使用多线程进行插值
 # 在本地电脑上可以提速三倍左右，超算上暂时无法加速
 def interp_2d_parallel(target_x, target_y, origin_x, origin_y, data, method='linear'):
+    '''
+    param        {*} target_x 目标经度网格 1D 或 2D
+    param        {*} target_y 目标纬度网格 1D 或 2D
+    param        {*} origin_x 初始经度网格 1D 或 2D
+    param        {*} origin_y 初始纬度网格 1D 或 2D
+    param        {*} data 数据 (*, lat, lon) 2D, 3D, 4D
+    param        {*} method 插值方法，可选 'linear', 'nearest', 'cubic' 等，默认为 'linear'
+    return       {*} 插值结果
+    description : 高维插值函数，默认插值最后两个维度，传输数据前请确保数据的维度正确
+    example     : interpolated_data = interp_2d_parallel(target_x, target_y, origin_x, origin_y, data, method='linear')
+    '''
     def interp_single2d(target_y, target_x, origin_y, origin_x, data, method='linear'):
         target_points = np.column_stack(
             (np.ravel(target_y), np.ravel(target_x)))

@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 15:07:13
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-10-06 19:00:51
+LastEditTime: 2024-10-20 21:18:01
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_file.py
 Description:  
 EditPlatform: vscode
@@ -12,7 +12,6 @@ ComputerInfo: XPS 15 9510
 SystemInfo: Windows 11
 Python Version: 3.11
 '''
-
 
 
 import glob
@@ -23,12 +22,16 @@ import shutil
 __all__ = ['link_file', 'copy_file', 'rename_files', 'make_folder',
            'clear_folder', 'remove_empty_folders', 'remove']
 
+
 def link_file(src_pattern, dst):
     '''
+    # 描述：创建符号链接，支持通配符
     # 使用示例
     # link_file(r'/data/hejx/liukun/era5/*', r'/data/hejx/liukun/Test/')
     # link_file(r'/data/hejx/liukun/era5/py.o*', r'/data/hejx/liukun/Test/py.o')
     # link_file(r'/data/hejx/liukun/era5/py.o*', r'/data/hejx/liukun/Test')
+    param      {*} src_pattern # 源文件或目录
+    param      {*} dst # 目标文件或目录
     '''
     src_pattern = str(src_pattern)
     # 使用glob.glob来处理可能包含通配符的src
@@ -62,11 +65,12 @@ def link_file(src_pattern, dst):
 
 def copy_file(src_pattern, dst):
     '''
+    # 描述：复制文件或目录，支持通配符
     # 使用示例
     # copy_file(r'/data/hejx/liukun/era5/py.o*', r'/data/hejx/liukun/Test/py.o')
-    # link_file(r'/data/hejx/liukun/era5/*', r'/data/hejx/liukun/Test/')
-    # link_file(r'/data/hejx/liukun/era5/py.o*', r'/data/hejx/liukun/Test/py.o')
     # copy_file(r'/data/hejx/liukun/era5/py.o*', r'/data/hejx/liukun/Test')
+    param      {*} src_pattern # 源文件或目录
+    param      {*} dst # 目标文件或目录
     '''
     src_pattern = str(src_pattern)
     # 使用glob.glob来处理可能包含通配符的src
@@ -112,11 +116,15 @@ def copy_file(src_pattern, dst):
 
 def rename_files(directory, old_str, new_str):
     '''
+    # 描述：重命名目录下的文件，支持通配符
     # 使用示例
-    directory_path = r"E:\Code\Matlab\Master\Ocean\ROMS\CROCO-1.3.1\My_Models\windfarm\CROCO_FILES"
+    directory_path = r"E:\windfarm\CROCO_FILES"
     old_str = "croco"
     new_str = "roms"
     rename_files(directory_path, old_str, new_str)
+    param      {*} directory # 目录
+    param      {*} old_str # 要替换的字符串
+    param      {*} new_str # 新字符串
     '''
     # 获取目录下的所有文件
     files = os.listdir(directory)
@@ -144,6 +152,15 @@ def rename_files(directory, old_str, new_str):
 
 # ** 创建子文件夹（可选清空）
 def make_folder(rootpath: str, folder_name: str, clear=0) -> str:
+    '''
+    # 描述：创建子文件夹（可选清空）
+    # 使用示例
+    rootpath = r'E:\Data\2024\09\17'
+    folder_name = 'var1'
+    newpath = make_folder(rootpath, folder_name, clear=1)
+    param       {*} rootpath # 根目录
+    param       {*} folder_name # 文件夹名称
+    '''
     folder_path = os.path.join(str(rootpath), str(folder_name))
     if clear:
         shutil.rmtree(folder_path, ignore_errors=True)
@@ -152,6 +169,12 @@ def make_folder(rootpath: str, folder_name: str, clear=0) -> str:
 
 # ** 清空文件夹
 def clear_folder(folder_path):
+    '''
+    # 描述：清空文件夹
+    # 使用示例
+    clear_folder(r'E:\Data\2024\09\17\var1')
+    param        {*} folder_path # 文件夹路径
+    '''
     folder_path = str(folder_path)
     if os.path.exists(folder_path):
         try:
@@ -171,6 +194,13 @@ def clear_folder(folder_path):
 
 # ** 清理空文件夹
 def remove_empty_folders(path, print_info=1):
+    '''
+    # 描述：清理空文件夹
+    # 使用示例
+    remove_empty_folders(r'E:\Data\2024\09\17', print_info=1)
+    param        {*} path # 文件夹路径
+    param        {*} print_info # 是否打印信息
+    '''
     path = str(path)
     # 遍历当前目录下的所有文件夹和文件
     for root, dirs, files in os.walk(path, topdown=False):
@@ -197,10 +227,12 @@ def remove_empty_folders(path, print_info=1):
 # ** 删除相关文件，可使用通配符
 def remove(pattern):
     '''
+    # 描述：删除相关文件，可使用通配符
     remove(r'E:\Code\Python\Model\WRF\Radar2\bzip2-radar-0*')
     # or
     os.chdir(r'E:\Code\Python\Model\WRF\Radar2')
     remove('bzip2-radar-0*')
+    param        {*} pattern # 文件路径或通配符
     '''
     # 使用glob.glob来获取所有匹配的文件
     # 可以使用通配符*来匹配所有文件

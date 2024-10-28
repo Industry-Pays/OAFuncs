@@ -14,7 +14,6 @@ Python Version: 3.11
 '''
 
 
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -23,6 +22,8 @@ __all__ = ['show', 'extract_colors', 'create_custom',
            'create_diverging', 'create_5rgb_txt']
 
 # ** 将cmap用填色图可视化（官网摘抄函数）
+
+
 def show(colormaps: list):
     """
     Helper function to plot data with associated colormap.
@@ -82,8 +83,7 @@ def create_diverging(colors: list):
     description : colors可以是颜色名称，也可以是十六进制颜色代码
     param        {*} colors
     return       {*}
-    example     : diverging_cmap = mk_cmap_diverging(
-    ["#4e00b3", "#0000FF", "#00c0ff", "#a1d3ff", "#DCDCDC", "#FFD39B", "#FF8247", "#FF0000", "#FF5F9E"])
+    example     : diverging_cmap = mk_cmap_diverging(["#00c0ff", "#a1d3ff", "#DCDCDC", "#FFD39B", "#FF8247"])
     '''
     # 自定义颜色位置
     n = len(colors)
@@ -119,8 +119,6 @@ def create_5rgb_txt(rgb_txt_filepath: str):  # 根据RGB的txt文档制作色卡
         rgb = rgb / 255.0
     icmap = mpl.colors.ListedColormap(rgb, name='my_color')
     return icmap
-
-
 
 
 if __name__ == '__main__':

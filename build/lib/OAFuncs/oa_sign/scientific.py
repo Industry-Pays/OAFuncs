@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-10-14 18:29:52
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-10-14 18:38:18
+LastEditTime: 2024-10-14 18:57:39
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_sign\\scientific.py
 Description:  
 EditPlatform: vscode
@@ -89,6 +89,7 @@ def sign_in_scientific_research(email, password):
                 print('           [bold red]未签到')
 
     def check_in_r():
+        # 先检查是否已经签到
         url = 'https://www.ablesci.com/'
         if cookie is not None:
             s.cookies.update(cookie)

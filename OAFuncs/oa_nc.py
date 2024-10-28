@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 14:58:50
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-10-06 19:11:30
+LastEditTime: 2024-10-28 10:48:53
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_nc.py
 Description:  
 EditPlatform: vscode
@@ -14,17 +14,22 @@ Python Version: 3.11
 '''
 
 
+import os
 
 import netCDF4 as nc
-import os
 import numpy as np
 import xarray as xr
 
-__all__ = ['get_var', 'extract5nc', 'write2nc']
+__all__ = ['get_var', 'extract5nc', 'write2nc',
+           'merge5nc', 'mod_var_attr']
+
 
 def get_var(file, *vars):
     '''
-    datas_ecm = get_var(file_ecm, 'h', 't', 'u', 'v')
+    description: 读取nc文件中的变量
+    param {file: 文件路径, *vars: 变量名}
+    example: datas = get_var(file_ecm, 'h', 't', 'u', 'v')
+    return {datas: 变量数据}
     '''
     ds = xr.open_dataset(file)
     datas = []
@@ -37,8 +42,14 @@ def get_var(file, *vars):
 
 def extract5nc(file, varname):
     '''
-    提取nc文件中的变量，再将相应维度提取，建立字典
-    返回变量及字典
+    描述：
+    1、提取nc文件中的变量
+    2、将相应维度提取，建立字典
+    return：返回变量及坐标字典
+    参数：
+    file: 文件路径
+    varname: 变量名
+    example: data, dimdict = extract5nc(file_ecm, 'h')
     '''
     ds = xr.open_dataset(file)
     vardata = ds[varname]
@@ -69,11 +80,14 @@ def _numpy_to_nc_type(numpy_type):
 
 def write2nc(file, data, varname, coords, mode):
     '''
+    description: 写入数据到nc文件
+    参数：
     file: 文件路径
     data: 数据
     varname: 变量名
     coords: 坐标，字典，键为维度名称，值为坐标数据
     mode: 写入模式，'w'为写入，'a'为追加
+    example: write2nc(r'test.nc', data, 'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')
     '''
     # 判断mode是写入还是追加
     if mode == 'w':
@@ -140,11 +154,63 @@ def write2nc(file, data, varname, coords, mode):
                 "Number of dimensions does not match the data shape.")
 
 
+def merge5nc(file_list, var_name, dim_name, target_filename):
+    """
+    批量提取 nc 文件中的某一变量，按照某一维度合并后写入新的 nc 文件。
+
+    参数：
+    file_list：nc 文件路径列表
+    var_name：要提取的变量名
+    dim_name：用于合并的维度名
+    target_filename：合并后的目标文件名
+    example: merge5nc(file_list, 'sst', 'time', 'merged_data.nc')
+    """
+    data_list = []
+    for i, file in enumerate(file_list):
+        print(f"Reading file {i + 1}/{len(file_list)}...")
+        ds = xr.open_dataset(file)
+        var = ds[var_name]
+        data_list.append(var)
+        ds.close()
+    print("Merging data...")
+    data = xr.concat(data_list, dim=dim_name)
+    print("Writing data to file...")
+    data.to_netcdf(target_filename)
+
+
+def mod_var_attr(nc_file_path, variable_name, attribute_name, attribute_value):
+    """
+    使用 netCDF4 库添加或修改 NetCDF 文件中特定变量的属性。
+
+    参数：
+    nc_file_path (str): NetCDF 文件路径
+    variable_name (str): 要操作的变量名
+    attribute_name (str): 属性名
+    attribute_value (任意类型): 属性值
+    example: mod_var_attr('test.nc', 'data', 'long_name', 'This is a test variable.')
+    """
+    try:
+        ds = nc.Dataset(nc_file_path, 'r+')
+        if variable_name not in ds.variables:
+            raise ValueError(
+                f"Variable '{variable_name}' not found in the NetCDF file.")
+
+        variable = ds.variables[variable_name]
+        if attribute_name in variable.ncattrs():
+            print(
+                f"Warning: Attribute '{attribute_name}' already exists. Replacing it.")
+            variable.setncattr(attribute_name, attribute_value)
+        else:
+            print(f"Adding attribute '{attribute_name}'...")
+            variable.setncattr(attribute_name, attribute_value)
+
+        ds.close()
+    except Exception as e:
+        raise RuntimeError(f"An error occurred: {e}")
 
 
 if __name__ == '__main__':
-    
+
     data = np.random.rand(100, 50)
     write2nc(r'test.nc', data,
-         'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')
-
+             'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')

@@ -15,10 +15,10 @@ from setuptools import Command, find_packages, setup
 NAME = 'OAFuncs'
 DESCRIPTION = 'My short description for my project.'
 URL = 'https://github.com/Industry-Pays/OAFuncs'
-EMAIL = '16031215@qq.com'
+EMAIL = 'liukun0312@stu.ouc.edu.cn'
 AUTHOR = 'Kun Liu'
 REQUIRES_PYTHON = '>=3.9.0'
-VERSION = '0.0.41'
+VERSION = '0.0.43'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
