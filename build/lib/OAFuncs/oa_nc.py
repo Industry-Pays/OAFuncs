@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 14:58:50
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-10-28 10:48:53
+LastEditTime: 2024-11-05 16:44:20
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_nc.py
 Description:  
 EditPlatform: vscode
@@ -21,7 +21,7 @@ import numpy as np
 import xarray as xr
 
 __all__ = ['get_var', 'extract5nc', 'write2nc',
-           'merge5nc', 'mod_var_attr']
+           'merge5nc', 'modify_var_value', 'modify_var_attr', 'rename_var_or_dim', 'check_ncfile']
 
 
 def get_var(file, *vars):
@@ -167,18 +167,81 @@ def merge5nc(file_list, var_name, dim_name, target_filename):
     """
     data_list = []
     for i, file in enumerate(file_list):
-        print(f"Reading file {i + 1}/{len(file_list)}...")
+        print(f"\rReading file {i + 1}/{len(file_list)}...", end="")
         ds = xr.open_dataset(file)
         var = ds[var_name]
         data_list.append(var)
         ds.close()
-    print("Merging data...")
+    print("\nMerging data...")
     data = xr.concat(data_list, dim=dim_name)
     print("Writing data to file...")
+    if os.path.exists(target_filename):
+        print("Warning: The target file already exists.")
+        print("Removing existing file...")
+        os.remove(target_filename)
     data.to_netcdf(target_filename)
 
 
-def mod_var_attr(nc_file_path, variable_name, attribute_name, attribute_value):
+def merge5nc_vars(file_list, var_names, dim_name, target_filename):
+    """
+    批量提取 nc 文件中的两个变量，按照某一维度合并后写入新的 nc 文件。
+
+    参数：
+    file_list：nc 文件路径列表
+    var_names：要提取的变量名列表，例如 ['u', 'v']
+    dim_name：用于合并的维度名
+    target_filename：合并后的目标文件名
+
+    example: merge5nc_vars(file_list, ['u', 'v'], 'time', 'merged_data.nc')
+    """
+    data_lists = [[] for _ in var_names]
+    for i, file in enumerate(file_list):
+        print(f"\rReading file {i + 1}/{len(file_list)}...", end="")
+        ds = xr.open_dataset(file)
+        for j, var_name in enumerate(var_names):
+            var = ds[var_name]
+            data_lists[j].append(var)
+        ds.close()
+    print("\nMerging data...")
+    merged_data = {}
+    for var_name, data_list in zip(var_names, data_lists):
+        merged_data[var_name] = xr.concat(data_list, dim=dim_name)
+    print("Writing data to file...")
+    ds_merged = xr.Dataset(merged_data)
+    if os.path.exists(target_filename):
+        print("Warning: The target file already exists.")
+        print("Removing existing file...")
+        os.remove(target_filename)
+    ds_merged.to_netcdf(target_filename)
+
+
+def modify_var_value(nc_file_path, variable_name, new_value):
+    """
+    使用 netCDF4 库修改 NetCDF 文件中特定变量的值
+
+    参数：
+    nc_file_path (str): NetCDF 文件路径
+    variable_name (str): 要修改的变量名
+    new_value (numpy.ndarray): 新的变量值
+
+    example: modify_var_value('test.nc', 'data', np.random.rand(100, 50))
+    """
+    try:
+        # Open the NetCDF file
+        dataset = nc.Dataset(nc_file_path, 'r+')
+        # Get the variable to be modified
+        variable = dataset.variables[variable_name]
+        # Modify the value of the variable
+        variable[:] = new_value
+        dataset.close()
+        print(
+            f"Successfully modified variable {variable_name} in {nc_file_path}.")
+    except Exception as e:
+        print(
+            f"An error occurred while modifying variable {variable_name} in {nc_file_path}: {e}")
+
+
+def modify_var_attr(nc_file_path, variable_name, attribute_name, attribute_value):
     """
     使用 netCDF4 库添加或修改 NetCDF 文件中特定变量的属性。
 
@@ -187,7 +250,7 @@ def mod_var_attr(nc_file_path, variable_name, attribute_name, attribute_value):
     variable_name (str): 要操作的变量名
     attribute_name (str): 属性名
     attribute_value (任意类型): 属性值
-    example: mod_var_attr('test.nc', 'data', 'long_name', 'This is a test variable.')
+    example: modify_var_attr('test.nc', 'data', 'long_name', 'This is a test variable.')
     """
     try:
         ds = nc.Dataset(nc_file_path, 'r+')
@@ -207,6 +270,72 @@ def mod_var_attr(nc_file_path, variable_name, attribute_name, attribute_value):
         ds.close()
     except Exception as e:
         raise RuntimeError(f"An error occurred: {e}")
+
+
+def rename_var_or_dim(ncfile_path, old_name, new_name):
+    """
+    Rename a variable and/or dimension in a NetCDF file.
+
+    Parameters:
+    ncfile_path (str): The path to the NetCDF file.
+    old_name (str): The name of the variable or dimension to be renamed.
+    new_name (str): The new name for the variable or dimension.
+
+    example: rename_var_or_dim('test.nc', 'time', 'ocean_time')
+    """
+    try:
+        with nc.Dataset(ncfile_path, 'r+') as dataset:
+            # If the old name is not found as a variable or dimension, print a message
+            if old_name not in dataset.variables and old_name not in dataset.dimensions:
+                print(
+                    f"Variable or dimension {old_name} not found in the file.")
+
+            # Attempt to rename the variable
+            if old_name in dataset.variables:
+                dataset.renameVariable(old_name, new_name)
+                print(
+                    f"Successfully renamed variable {old_name} to {new_name}.")
+
+            # Attempt to rename the dimension
+            if old_name in dataset.dimensions:
+                # Check if the new dimension name already exists
+                if new_name in dataset.dimensions:
+                    raise ValueError(
+                        f"Dimension name {new_name} already exists in the file.")
+                dataset.renameDimension(old_name, new_name)
+                print(
+                    f"Successfully renamed dimension {old_name} to {new_name}.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+def check_ncfile(ncfile, if_delete=False):
+    if not os.path.exists(ncfile):
+        return False
+
+    try:
+        with nc.Dataset(ncfile, 'r') as f:
+            # 确保f被使用，这里我们检查文件中变量的数量
+            if len(f.variables) > 0:
+                return True
+            else:
+                # 如果没有变量，我们可以认为文件是损坏的
+                raise ValueError("File is empty or corrupted.")
+    except OSError as e:
+        # 捕获文件打开时可能发生的OSError
+        print(f"An error occurred while opening the file: {e}")
+        if if_delete:
+            os.remove(ncfile)
+            print(f"File {ncfile} has been deleted.")
+        return False
+    except Exception as e:
+        # 捕获其他可能的异常
+        print(f"An unexpected error occurred: {e}")
+        if if_delete:
+            os.remove(ncfile)
+            print(f"File {ncfile} has been deleted.")
+        return False
 
 
 if __name__ == '__main__':

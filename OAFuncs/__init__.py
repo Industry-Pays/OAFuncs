@@ -16,6 +16,7 @@ Python Version: 3.11
 # 会导致OAFuncs直接导入所有函数，不符合模块化设计
 from .oa_cmap import *
 from .oa_data import *
+from .oa_down import *
 from .oa_draw import *
 from .oa_file import *
 from .oa_help import *

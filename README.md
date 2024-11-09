@@ -40,6 +40,7 @@ import OAFuncs
 # OAFuncs.oa_nc.*
 # OAFuncs.oa_help.*
 # OAFuncs.oa_sign.*
+# OAFuncs.oa_down.*
 
 # 查询当前所有可用函数
 OAFuncs.oa_help.query()
@@ -48,11 +49,11 @@ OAFuncs.oa_help.use('get_var')
 ```
 
 ```shell
-# 此小板块于2024/10/20更新，仅为示例，不代表最新情况
+# 此小板块于2024/10/28更新，仅为示例，不代表最新情况
 函数数量：
-30
+32
 函数列表：
-['clear_folder', 'copy_file', 'create_5rgb_txt', 'create_custom', 'create_diverging', 'create_gif', 'extract5nc', 'extract_colors', 'get_var', 'install_lib', 'interp_2d', 'interp_2d_parallel', 'link_file', 'make_folder', 'plot_contourf', 'plot_contourf_cartopy', 'plot_contourf_lonlat', 'plot_quiver', 'query', 'remove', 'remove_empty_folders', 'rename_files', 'show', 'sign_in_love_ocean', 'sign_in_meteorological_home', 'sign_in_scientific_research', 'upgrade_lib', 'use', 'write2nc', 'xy2lonlat']
+['clear_folder', 'copy_file', 'create_5rgb_txt', 'create_custom', 'create_diverging', 'create_gif', 'extract5nc', 'extract_colors', 'get_var', 'install_lib', 'interp_2d', 'interp_2d_parallel', 'link_file', 'make_folder', 'merge5nc', 'mod_var_attr', 'plot_contourf', 'plot_contourf_cartopy', 'plot_contourf_lonlat', 'plot_quiver', 'query', 'remove', 'remove_empty_folders', 'rename_files', 'show', 'sign_in_love_ocean', 'sign_in_meteorological_home', 'sign_in_scientific_research', 'upgrade_lib', 'use', 'write2nc', 'xy2lonlat']
 模块全路径：
 OAFuncs.oa_nc.get_var
 函数提示：
@@ -81,6 +82,36 @@ OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
 
 - **OAFuncs**
   
+  - oa_down
+    
+    - hycom_3hourly
+      
+      - how_to_use
+        
+        2024/11/02更新
+        
+        查看如何使用本板块，主要是开发者使用
+      
+      - draw_time_range
+        
+        2024/11/02更新
+        
+        绘制hycom数据集时间分布
+      
+      - download
+        
+        2024/11/02更新
+        
+        下载hycom数据，3h分辨率
+    
+    - refs_pdf
+      
+      - download5doi
+        
+        2024/11/09更新
+        
+        根据doi下载文献pdf
+  
   - oa_sign
     
     - meteorological
@@ -90,14 +121,22 @@ OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
         2024/10/28更新
         
         气象家园签到
+    
+    - ocean
+      
+      - sign_in_love_ocean
         
-        - ocean
+        2024/10/28更新
         
-        - sign_in_love_ocean
-          
-          2024/10/28更新
-          
-          吾爱海洋签到
+        吾爱海洋签到
+    
+    - scientific
+      
+      - sign_in_scientific_research
+        
+        2024/10/28更新
+        
+        科研通签到
   
   - oa_cmap
     
@@ -267,11 +306,35 @@ OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
       
       合并nc文件中的某一变量
     
-    - mod_var_attr
+    - merge5nc_vars
       
       2024/10/28更新
       
+      合并nc文件中多个变量，按照同一坐标维度
+    
+    - modify_var_value
+      
+      2024/10/29更新
+      
+      修改变量值
+    
+    - modify_var_attr
+      
+      2024/10/29更新
+      
       添加或修改nc文件变量属性
+    
+    - rename_var_or_dim
+      
+      2024/10/29更新
+      
+      重命名变量或维度名，如果该名称涉及维度，会自动修改
+    
+    - check_ncfile
+      
+      2024/11/05更新
+      
+      检查nc文件是否存在/是否有问题，可选删除
 
 ## 依赖库
 
@@ -283,6 +346,14 @@ OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
 "Cartopy"
 "netCDF4"
 ```
+
+------------------------------------------------------------------------------------------------------------------------------
+
+<mark>Note</mark>：**以下内容暂不想再更新，写文件太费精力，使用OAFuncs.oa_help.use('func_name')方式获取说明吧~~**
+
+2024/11/02
+
+----------------------------------------
 
 ## 1 `oa_cmap`
 

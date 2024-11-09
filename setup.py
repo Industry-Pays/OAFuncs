@@ -18,7 +18,7 @@ URL = 'https://github.com/Industry-Pays/OAFuncs'
 EMAIL = 'liukun0312@stu.ouc.edu.cn'
 AUTHOR = 'Kun Liu'
 REQUIRES_PYTHON = '>=3.9.0'
-VERSION = '0.0.43'
+VERSION = '0.0.56'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -37,6 +37,9 @@ REQUIRED = [
     "requests",
     "bs4",
     "rich",
+    # down
+    'pathlib',
+    'pandas',
 ]
 
 # What packages are optional?
@@ -119,7 +122,7 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(
-        exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_help", "oa_nc", "oa_python", "oa_sign", "oa_*"]),
+        exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_help", "oa_nc", "oa_python", "oa_down", "oa_sign", "oa_*"]),
     # packages=find_packages(exclude=["nc", "file", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
@@ -141,6 +144,7 @@ setup(
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
