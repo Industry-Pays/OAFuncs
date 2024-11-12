@@ -4,9 +4,9 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 15:07:13
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-10-20 21:18:01
+LastEditTime: 2024-11-11 16:11:23
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_file.py
-Description:  
+Description:
 EditPlatform: vscode
 ComputerInfo: XPS 15 9510
 SystemInfo: Windows 11
@@ -20,7 +20,7 @@ import re
 import shutil
 
 __all__ = ['link_file', 'copy_file', 'rename_files', 'make_folder',
-           'clear_folder', 'remove_empty_folders', 'remove']
+           'clear_folder', 'remove_empty_folders', 'remove', 'file_size']
 
 
 def link_file(src_pattern, dst):
@@ -33,30 +33,30 @@ def link_file(src_pattern, dst):
     param      {*} src_pattern # 源文件或目录
     param      {*} dst # 目标文件或目录
     '''
-    src_pattern = str(src_pattern)
+    src_pattern= str(src_pattern)
     # 使用glob.glob来处理可能包含通配符的src
-    src_files = glob.glob(src_pattern)
+    src_files= glob.glob(src_pattern)
     if not src_files:
         raise FileNotFoundError('文件不存在: {}'.format(src_pattern))
 
     # 判断dst是路径还是包含文件名的路径
     if os.path.isdir(dst):
         # 如果dst是路径，则保持源文件的文件名
-        dst_dir = dst
+        dst_dir= dst
         for src_file in src_files:
-            src_file_basename = os.path.basename(src_file)
-            dst_file = os.path.join(dst_dir, src_file_basename)
+            src_file_basename= os.path.basename(src_file)
+            dst_file= os.path.join(dst_dir, src_file_basename)
             if os.path.exists(dst_file):
                 os.remove(dst_file)
             os.symlink(src_file, dst_file)
             print(f'创建符号链接: {src_file} -> {dst_file}')
     else:
         # 如果dst包含文件名，则创建链接后重命名
-        dst_dir = os.path.dirname(dst)
+        dst_dir= os.path.dirname(dst)
         os.makedirs(dst_dir, exist_ok=True)
         # 只处理第一个匹配的文件
-        src_file = src_files[0]
-        dst_file = dst
+        src_file= src_files[0]
+        dst_file= dst
         if os.path.exists(dst_file):
             os.remove(dst_file)
         os.symlink(src_file, dst_file)
@@ -72,19 +72,19 @@ def copy_file(src_pattern, dst):
     param      {*} src_pattern # 源文件或目录
     param      {*} dst # 目标文件或目录
     '''
-    src_pattern = str(src_pattern)
+    src_pattern= str(src_pattern)
     # 使用glob.glob来处理可能包含通配符的src
-    src_files = glob.glob(src_pattern)
+    src_files= glob.glob(src_pattern)
     if not src_files:
         raise FileNotFoundError('文件不存在: {}'.format(src_pattern))
 
     # 判断dst是路径还是包含文件名的路径
     if os.path.isdir(dst):
         # 如果dst是路径，则保持源文件的文件名
-        dst_dir = dst
+        dst_dir= dst
         for src_file in src_files:
-            src_file_basename = os.path.basename(src_file)
-            dst_file = os.path.join(dst_dir, src_file_basename)
+            src_file_basename= os.path.basename(src_file)
+            dst_file= os.path.join(dst_dir, src_file_basename)
             if os.path.exists(dst_file):
                 if os.path.isdir(dst_file):
                     shutil.rmtree(dst_file)
@@ -97,11 +97,11 @@ def copy_file(src_pattern, dst):
             print(f'复制文件或目录: {src_file} -> {dst_file}')
     else:
         # 如果dst包含文件名，则复制后重命名
-        dst_dir = os.path.dirname(dst)
+        dst_dir= os.path.dirname(dst)
         os.makedirs(dst_dir, exist_ok=True)
         # 只处理第一个匹配的文件
-        src_file = src_files[0]
-        dst_file = dst
+        src_file= src_files[0]
+        dst_file= dst
         if os.path.exists(dst_file):
             if os.path.isdir(dst_file):
                 shutil.rmtree(dst_file)
@@ -127,23 +127,23 @@ def rename_files(directory, old_str, new_str):
     param      {*} new_str # 新字符串
     '''
     # 获取目录下的所有文件
-    files = os.listdir(directory)
+    files= os.listdir(directory)
 
     # 构建正则表达式以匹配要替换的字符串
-    pattern = re.compile(re.escape(old_str))
+    pattern= re.compile(re.escape(old_str))
 
     # 遍历目录下的文件
     for filename in files:
         # 检查文件名中是否包含要替换的字符串
         if pattern.search(filename):
             # 构建新的文件名
-            new_filename = pattern.sub(new_str, filename)
+            new_filename= pattern.sub(new_str, filename)
 
             # 构建旧文件的完整路径
-            old_path = os.path.join(directory, filename)
+            old_path= os.path.join(directory, filename)
 
             # 构建新文件的完整路径
-            new_path = os.path.join(directory, new_filename)
+            new_path= os.path.join(directory, new_filename)
 
             # 重命名文件
             os.rename(old_path, new_path)
@@ -161,13 +161,15 @@ def make_folder(rootpath: str, folder_name: str, clear=0) -> str:
     param       {*} rootpath # 根目录
     param       {*} folder_name # 文件夹名称
     '''
-    folder_path = os.path.join(str(rootpath), str(folder_name))
+    folder_path= os.path.join(str(rootpath), str(folder_name))
     if clear:
         shutil.rmtree(folder_path, ignore_errors=True)
     os.makedirs(folder_path, exist_ok=True)
     return folder_path
 
 # ** 清空文件夹
+
+
 def clear_folder(folder_path):
     '''
     # 描述：清空文件夹
@@ -175,12 +177,12 @@ def clear_folder(folder_path):
     clear_folder(r'E:\Data\2024\09\17\var1')
     param        {*} folder_path # 文件夹路径
     '''
-    folder_path = str(folder_path)
+    folder_path= str(folder_path)
     if os.path.exists(folder_path):
         try:
             # 遍历文件夹中的所有文件和子文件夹
             for filename in os.listdir(folder_path):
-                file_path = os.path.join(folder_path, filename)
+                file_path= os.path.join(folder_path, filename)
                 # 判断是文件还是文件夹
                 if os.path.isfile(file_path) or os.path.islink(file_path):
                     os.unlink(file_path)  # 删除文件或链接
@@ -201,12 +203,12 @@ def remove_empty_folders(path, print_info=1):
     param        {*} path # 文件夹路径
     param        {*} print_info # 是否打印信息
     '''
-    path = str(path)
+    path= str(path)
     # 遍历当前目录下的所有文件夹和文件
     for root, dirs, files in os.walk(path, topdown=False):
         # 遍历文件夹列表
         for folder in dirs:
-            folder_path = os.path.join(root, folder)
+            folder_path= os.path.join(root, folder)
             # 判断文件是否有权限访问
             try:
                 os.listdir(folder_path)
@@ -236,8 +238,8 @@ def remove(pattern):
     '''
     # 使用glob.glob来获取所有匹配的文件
     # 可以使用通配符*来匹配所有文件
-    pattern = str(pattern)
-    file_list = glob.glob(pattern)
+    pattern= str(pattern)
+    file_list= glob.glob(pattern)
     for file_path in file_list:
         if os.path.exists(file_path):
             try:
@@ -248,6 +250,43 @@ def remove(pattern):
                 print(e)
         else:
             print(f'文件不存在: {file_path}')
+
+
+def file_size(file_path, unit='KB'):
+    '''
+    Description: 获取文件大小
+
+    Args:
+    file_path: 文件路径
+    unit: 单位（PB、TB、GB、MB、KB）
+
+    Returns:
+    文件大小（单位：PB、TB、GB、MB、KB）
+    '''
+    # 检查文件是否存在
+    if not os.path.exists(file_path):
+        return "文件不存在"
+
+    # 获取文件大小（字节）
+    file_size= os.path.getsize(file_path)
+
+    # 单位转换字典
+    unit_dict= {
+        'PB': 1024**5,
+        'TB': 1024**4,
+        'GB': 1024**3,
+        'MB': 1024**2,
+        'KB': 1024
+    }
+
+    # 检查传入的单位是否合法
+    if unit not in unit_dict:
+        return "单位不合法，请选择PB、TB、GB、MB、KB中的一个"
+
+    # 转换文件大小到指定单位
+    converted_size= file_size / unit_dict[unit]
+
+    return converted_size
 
 
 if __name__ == '__main__':

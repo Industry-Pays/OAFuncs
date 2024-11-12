@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-11-01 10:31:09
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-11-04 12:40:49
+LastEditTime: 2024-11-12 16:22:33
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_down\\hycom_3hourly.py
 Description:
 EditPlatform: vscode
@@ -30,7 +30,7 @@ from rich.progress import Progress
 warnings.filterwarnings("ignore", category=RuntimeWarning,
                         message="Engine '.*' loading failed:.*")
 
-__all__ = ['draw_time_range', 'download', 'how_to_use']
+__all__ = ['draw_time_range', 'download', 'how_to_use', 'get_time_list']
 
 # time resolution
 data_info = {'yearly': {}, 'monthly': {}, 'daily': {}, 'hourly': {}}
@@ -173,11 +173,18 @@ def draw_time_range(pic_save_folder=None):
     data = []
     for dataset, versions in data_info['hourly']['dataset'].items():
         for version, time_range in versions['version'].items():
+            t_s = time_range['time_range']['time_start']
+            t_e = time_range['time_range']['time_end']
+            if len(t_s) == 8:
+                t_s = t_s + '00'
+            if len(t_e) == 8:
+                t_e = t_e + '21'
+            t_s, t_e = t_s + '0000', t_e + '0000'
             data.append({
                 'dataset': dataset,
                 'version': version,
-                'start_date': pd.to_datetime(time_range['time_range']['time_start']),
-                'end_date': pd.to_datetime(time_range['time_range']['time_end'])
+                'start_date': pd.to_datetime(t_s),
+                'end_date': pd.to_datetime(t_e)
             })
 
     # Creating a DataFrame
@@ -201,8 +208,20 @@ def draw_time_range(pic_save_folder=None):
     for _, row in df.iterrows():
         plt.plot([row['start_date'], row['end_date']], [k, k],
                  color=label_colors[f"{row['dataset']}_{row['version']}"], linewidth=6)
-        plt.text(row['end_date'], k,
-                 f"{row['version']}", ha='right', color='black')
+        # plt.text(row['end_date'], k,
+        #          f"{row['version']}", ha='right', color='black')
+        ymdh_s = row['start_date'].strftime('%Y-%m-%d %H')
+        ymdh_e = row['end_date'].strftime('%Y-%m-%d %H')
+        if k == 1 or k == len(combined_labels):
+            plt.text(row['start_date'], k+0.125,
+                     f"{ymdh_s}", ha='left', color='black')
+            plt.text(row['end_date'], k+0.125,
+                     f"{ymdh_e}", ha='right', color='black')
+        else:
+            plt.text(row['start_date'], k+0.125,
+                     f"{ymdh_s}", ha='right', color='black')
+            plt.text(row['end_date'], k+0.125,
+                     f"{ymdh_e}", ha='left', color='black')
         k += 1
 
     # Setting the y-axis labels
@@ -215,8 +234,12 @@ def draw_time_range(pic_save_folder=None):
     plt.tight_layout()
     if pic_save_folder:
         plt.savefig(Path(pic_save_folder) / 'HYCOM_time_range.png')
+        print(f'[bold green]HYCOM_time_range.png has been saved in {
+              pic_save_folder}')
     else:
         plt.savefig('HYCOM_time_range.png')
+        print('[bold green]HYCOM_time_range.png has been saved in the current folder')
+        print(f'Curren folder: {os.getcwd()}')
     # plt.show()
     plt.close()
 
@@ -224,20 +247,26 @@ def draw_time_range(pic_save_folder=None):
 def transform_time(time_str):
     # old_time = '2023080203'
     # time_new = '2023-08-02T03%3A00%3A00Z'
-    time_new = f'{time_str[:4]}-{time_str[4:6]}-{time_str[6:8]}T{time_str[8:10]}%3A00%3A00Z'
+    time_new = f'{time_str[:4]}-{time_str[4:6]
+                                 }-{time_str[6:8]}T{time_str[8:10]}%3A00%3A00Z'
     return time_new
 
 
-def add_delta_time(dt, delta_hour):
-    return dt + datetime.timedelta(hours=delta_hour)
-
-
 def get_time_list(time_s, time_e, delta_hour):
+    '''
+    Description: get a list of time strings from time_s to time_e with delta_hour
+    Args:
+        time_s: start time string, e.g. '2023080203'
+        time_e: end time string, e.g. '2023080303'
+        delta_hour: interval of hours
+    Returns:
+        dt_list: a list of time strings
+    '''
     dt = datetime.datetime.strptime(time_s, '%Y%m%d%H')
     dt_list = []
     while dt.strftime('%Y%m%d%H') <= time_e:
         dt_list.append(dt.strftime('%Y%m%d%H'))
-        dt = add_delta_time(dt, delta_hour)
+        dt = dt + datetime.timedelta(hours=delta_hour)
     return dt_list
 
 
@@ -692,8 +721,8 @@ def download(var, time_s, time_e, lon_min=0, lon_max=359.92, lat_min=-80, lat_ma
     depth: float, the depth, default is None
     level: int, the level number, default is None
     store_path: str, the path to store the data, default is None
-    dataset_name: str, the dataset name, default is None
-    version_name: str, the version name, default is None
+    dataset_name: str, the dataset name, default is None, example: 'GLBv0.08', 'GLBu0.08', 'GLBy0.08'
+    version_name: str, the version name, default is None, example: '53.X', '56.3'
     num_workers: int, the number of workers, default is None
 
     Returns:
@@ -795,12 +824,12 @@ def how_to_use():
 
 
 if __name__ == '__main__':
-    time_s, time_e = '2018010112', '2018020100'
-    merge_time = '201801'
+    time_s, time_e = '2018010112', '2018010300'
+    merge_name = '201801'
     root_path = r'I:\hycom_data_2018'
     location_dict = {'west': 115, 'east': 130, 'south': 33, 'north': 45}
     download_dict = {
-        'water_u': {'simple_name': 'u', 'download': 0},
+        'water_u': {'simple_name': 'u', 'download': 1},
         'water_v': {'simple_name': 'v', 'download': 0},
         'surf_el': {'simple_name': 'ssh', 'download': 0},
         'water_temp': {'simple_name': 'temp', 'download': 0},
@@ -836,6 +865,8 @@ if __name__ == '__main__':
         for var_name in download_dict.keys():
             download_var(var_name)
 
+    # draw_time_range(r'I:\Delete')
+
     """ if combine_switch:
         time_list = get_time_list(time_s, time_e, 3)
         for var_name in download_dict.keys():
@@ -848,4 +879,4 @@ if __name__ == '__main__':
                 file_list.append(
                     Path(root_path)/var/f'HYCOM_{var_name}_{time_str}.nc')
             merge5nc(file_list, var_name, 'time',
-                     Path(root_path)/var/f'HYCOM_{var_name}_{merge_time}.nc') """
+                     Path(root_path)/var/f'HYCOM_{var_name}_{merge_name}.nc') """

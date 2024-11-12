@@ -4,7 +4,7 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-11-09 13:58:28
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-11-09 17:39:50
+LastEditTime: 2024-11-11 16:12:20
 FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_down\\refs_pdf.py
 Description:  
 EditPlatform: vscode
@@ -27,7 +27,7 @@ from rich.progress import track
 __all__ = ['download5doi']
 
 
-def get_file_size(file_path, unit='KB'):
+def _get_file_size(file_path, unit='KB'):
     # 检查文件是否存在
     if not os.path.exists(file_path):
         return "文件不存在"
@@ -207,7 +207,7 @@ class _Downloader:
 
     def download_pdf(self):
         if self.fpath.exists():
-            fsize = get_file_size(self.fpath, unit='KB')
+            fsize = _get_file_size(self.fpath, unit='KB')
             if fsize < self.check_size:
                 # delete the wrong file
                 os.remove(self.fpath)
@@ -247,7 +247,7 @@ class _Downloader:
                 if response.status_code == 200:
                     with open(self.fpath, 'wb') as f:
                         f.write(response.content)
-                    fsize = get_file_size(self.fpath, unit='KB')
+                    fsize = _get_file_size(self.fpath, unit='KB')
                     if fsize < self.check_size:
                         # delete the wrong file
                         os.remove(self.fpath)

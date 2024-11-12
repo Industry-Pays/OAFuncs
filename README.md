@@ -103,6 +103,12 @@ OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
         2024/11/02更新
         
         下载hycom数据，3h分辨率
+      
+      - get_time_list
+        
+        2024/11/12更新
+        
+        方便获取时间序列，间隔为hour
     
     - refs_pdf
       
@@ -265,6 +271,12 @@ OAFuncs.oa_nc.write2nc(r'I:\test.nc', data,
       2024/10/28更新
       
       删除文件/文件夹
+    
+    - file_size
+      
+      2024/11/11更新
+      
+      获取文件大小，自选单位
   
   - oa_help
     

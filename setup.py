@@ -18,7 +18,7 @@ URL = 'https://github.com/Industry-Pays/OAFuncs'
 EMAIL = 'liukun0312@stu.ouc.edu.cn'
 AUTHOR = 'Kun Liu'
 REQUIRES_PYTHON = '>=3.9.0'
-VERSION = '0.0.56'
+VERSION = '0.0.57'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
