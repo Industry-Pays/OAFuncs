@@ -1,3 +1,37 @@
+Metadata-Version: 2.1
+Name: oafuncs
+Version: 0.0.59
+Summary: My short description for my project.
+Home-page: https://github.com/Industry-Pays/oafuncs
+Author: Kun Liu
+Author-email: liukun0312@stu.ouc.edu.cn
+License: MIT
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.9.0
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+Requires-Dist: matplotlib
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: xarray
+Requires-Dist: Cartopy
+Requires-Dist: netCDF4
+Requires-Dist: requests
+Requires-Dist: bs4
+Requires-Dist: rich
+Requires-Dist: pathlib
+Requires-Dist: pandas
+
+
 # oafuncs
 
 ## Description
@@ -19,7 +53,7 @@ Python Function
 ## PyPI
 
 ```html
-https://pypi.org/project/oafuncs
+https://pypi.org/project/OAFuncs
 ```
 
 ## Github

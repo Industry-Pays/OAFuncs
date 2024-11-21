@@ -12,13 +12,13 @@ from shutil import rmtree
 from setuptools import Command, find_packages, setup
 
 # Package meta-data.
-NAME = 'OAFuncs'
+NAME = 'oafuncs'
 DESCRIPTION = 'My short description for my project.'
 URL = 'https://github.com/Industry-Pays/OAFuncs'
 EMAIL = 'liukun0312@stu.ouc.edu.cn'
 AUTHOR = 'Kun Liu'
 REQUIRES_PYTHON = '>=3.9.0'
-VERSION = '0.0.57'
+VERSION = '0.0.59'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
@@ -122,7 +122,7 @@ setup(
     python_requires=REQUIRES_PYTHON,
     url=URL,
     packages=find_packages(
-        exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_help", "oa_nc", "oa_python", "oa_down", "oa_sign", "oa_*"]),
+        exclude=["oa_cmap", "oa_data", "oa_draw", "oa_file", "oa_help", "oa_nc", "oa_python", "oa_down", "oa_sign", "oa_tool", "oa_*"]),
     # packages=find_packages(exclude=["nc", "file", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],

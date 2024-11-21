@@ -1,0 +1,11 @@
+matplotlib
+numpy
+scipy
+xarray
+Cartopy
+netCDF4
+requests
+bs4
+rich
+pathlib
+pandas
