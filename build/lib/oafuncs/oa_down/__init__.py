@@ -4,8 +4,8 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 16:09:20
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-10-14 18:12:12
-FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_down\\__init__.py
+LastEditTime: 2024-12-01 19:49:40
+FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\oa_down\\__init__.py
 Description:  
 EditPlatform: vscode
 ComputerInfo: XPS 15 9510
@@ -17,4 +17,4 @@ Python Version: 3.11
 # from .meteorological_home import sign as meteorological_home
 
 from .hycom_3hourly import *
-from .refs_pdf import *
+from .literature import *

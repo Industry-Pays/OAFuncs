@@ -4,8 +4,8 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-10-11 21:02:07
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-10-11 21:47:19
-FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_python.py
+LastEditTime: 2024-11-21 10:59:53
+FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\oa_python.py
 Description:  
 EditPlatform: vscode
 ComputerInfo: XPS 15 9510
@@ -17,7 +17,8 @@ import os
 
 __all__ = ['install_lib', 'upgrade_lib']
 
-def install_lib(libs=None,python_exe='python'):
+
+def install_lib(libs=None, python_exe='python'):
     '''
     libs: list, 需要安装的库
     python_exe: str, python版本；如在windows下，将python.exe复制为python312.exe，然后python_exe='python312'
@@ -26,7 +27,7 @@ def install_lib(libs=None,python_exe='python'):
     os.system(python_exe + " -m pip install --upgrade pip")
     if libs is None:
         libs = [
-            # "OAFuncs",  # 自己的库，在这个函数不宜操作，避免报错
+            # "oafuncs",  # 自己的库，在这个函数不宜操作，避免报错
             "requests",  # 网页
             "xlwt",  # excel文件
             "xlrd",  # excel文件
@@ -94,7 +95,7 @@ def install_lib(libs=None,python_exe='python'):
         print("安装失败:", str(e))
 
 
-def upgrade_lib(libs=None,python_exe='python'):
+def upgrade_lib(libs=None, python_exe='python'):
     if libs is None:
         installed_libs = os.popen(python_exe + ' -m pip list').read()
         libs = installed_libs

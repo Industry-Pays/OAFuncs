@@ -1,8 +1,8 @@
 Metadata-Version: 2.1
 Name: oafuncs
-Version: 0.0.59
+Version: 0.0.82
 Summary: My short description for my project.
-Home-page: https://github.com/Industry-Pays/oafuncs
+Home-page: https://github.com/Industry-Pays/OAFuncs
 Author: Kun Liu
 Author-email: liukun0312@stu.ouc.edu.cn
 License: MIT
@@ -13,7 +13,6 @@ Classifier: Programming Language :: Python :: 3.9
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
-Classifier: Programming Language :: Python :: 3.13
 Classifier: Programming Language :: Python :: Implementation :: CPython
 Classifier: Programming Language :: Python :: Implementation :: PyPy
 Requires-Python: >=3.9.0
@@ -48,12 +47,12 @@ Python Function
 
 <mark>注</mark>：若有需求，可邮件至`liukun0312@stu.ouc.edu.cn`，能力范围内可考虑实现
 
-**精力有限，部分函数使用说明文档未能及时更新/添加，可参考`结构`部分简述，再使用`OAFuncs.oa_help.use('func_name')`函数调取函数本身说明**
+**精力有限，部分函数使用说明文档未能及时更新/添加，可参考`结构`部分简述，再使用`oafuncs.oa_help.use('func_name')`函数调取函数本身说明**
 
 ## PyPI
 
 ```html
-https://pypi.org/project/OAFuncs
+https://pypi.org/project/oafuncs
 ```
 
 ## Github
@@ -144,7 +143,7 @@ oafuncs.oa_nc.write2nc(r'I:\test.nc', data,
         
         方便获取时间序列，间隔为hour
     
-    - refs_pdf
+    - literature
       
       - download5doi
         
@@ -264,6 +263,12 @@ oafuncs.oa_nc.write2nc(r'I:\test.nc', data,
   
   - oa_file
     
+    - find_file
+      
+      2024/12/02更新
+      
+      查找满足条件的所有文件
+    
     - link_file
       
       2024/10/28更新
@@ -276,9 +281,9 @@ oafuncs.oa_nc.write2nc(r'I:\test.nc', data,
       
       复制文件
     
-    - rename_files
+    - rename_file
       
-      2024/10/28更新
+      2024/12/02更新
       
       按一定规则重命名文件（可多个）
     

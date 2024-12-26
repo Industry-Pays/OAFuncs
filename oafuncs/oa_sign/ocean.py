@@ -4,8 +4,8 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-10-14 16:59:26
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-10-14 18:28:11
-FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_sign\\ocean.py
+LastEditTime: 2024-11-21 13:16:14
+FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\oa_sign\\ocean.py
 Description:  
 EditPlatform: vscode
 ComputerInfo: XPS 15 9510
@@ -40,14 +40,12 @@ def sign_in_love_ocean(email, password):
         response = s.get(url, params=para_login)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'lxml')
-        login_hash = soup.find('form', attrs={'name': 'login'})[
-            'action'].split('loginhash=')[1]
+        login_hash = soup.find('form', attrs={'name': 'login'})['action'].split('loginhash=')[1]
         return login_hash
 
     def _get_login_formhash():
         url = 'https://www.52ocean.cn/member.php?'
-        para_login = {'mod': 'logging', 'action': 'login', 'infloat': 'yes',
-                      'handlekey': 'login', 'inajax': '1', 'ajaxtarget': 'fwin_content_login'}
+        para_login = {'mod': 'logging', 'action': 'login', 'infloat': 'yes', 'handlekey': 'login', 'inajax': '1', 'ajaxtarget': 'fwin_content_login'}
         response = s.get(url, params=para_login)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'lxml')
@@ -72,8 +70,7 @@ def sign_in_love_ocean(email, password):
 
     def _login():
         url = 'https://www.52ocean.cn/member.php?'
-        mydata['password'] = hashlib.md5(
-            mydata['password'].encode()).hexdigest()
+        mydata['password'] = hashlib.md5(mydata['password'].encode()).hexdigest()
         credentials = {
             'password': mydata['password'],
         }
@@ -103,8 +100,7 @@ def sign_in_love_ocean(email, password):
             'Referer': 'https://www.52ocean.cn/member.php?',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
         }
-        response = s.post(url, params=query_params,
-                          data=from_data, headers=head)
+        response = s.post(url, params=query_params, data=from_data, headers=head)
         if '欢迎' in response.text:
             print('           [bold green]登录成功')
             try:
@@ -146,8 +142,7 @@ def sign_in_love_ocean(email, password):
             print(f'[bold blue]{k}:  [bold green]{v}')
         print('[bold blue]------------------------------')
 
-    mydata = {'username': None,
-              'email': email, 'password': password}  # 不要修改关键字
+    mydata = {'username': None, 'email': email, 'password': password}  # 不要修改关键字
     s = requests.Session()
     print('[bold purple]-----------吾爱海洋-----------')
     cookie = _login()

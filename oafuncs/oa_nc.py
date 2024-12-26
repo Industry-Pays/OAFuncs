@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 # coding=utf-8
-'''
+"""
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-09-17 14:58:50
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-11-05 16:44:20
-FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_nc.py
-Description:  
+LastEditTime: 2024-12-06 14:16:56
+FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\oa_nc.py
+Description:
 EditPlatform: vscode
 ComputerInfo: XPS 15 9510
 SystemInfo: Windows 11
 Python Version: 3.11
-'''
-
+"""
 
 import os
 
@@ -20,17 +19,16 @@ import netCDF4 as nc
 import numpy as np
 import xarray as xr
 
-__all__ = ['get_var', 'extract5nc', 'write2nc',
-           'merge5nc', 'modify_var_value', 'modify_var_attr', 'rename_var_or_dim', 'check_ncfile']
+__all__ = ["get_var", "extract5nc", "write2nc", "merge5nc", "modify_var_value", "modify_var_attr", "rename_var_or_dim", "check_ncfile", "convert_longitude", "nc_isel"]
 
 
 def get_var(file, *vars):
-    '''
+    """
     description: 读取nc文件中的变量
     param {file: 文件路径, *vars: 变量名}
     example: datas = get_var(file_ecm, 'h', 't', 'u', 'v')
     return {datas: 变量数据}
-    '''
+    """
     ds = xr.open_dataset(file)
     datas = []
     for var in vars:
@@ -40,8 +38,8 @@ def get_var(file, *vars):
     return datas
 
 
-def extract5nc(file, varname):
-    '''
+def extract5nc(file, varname, only_value=True):
+    """
     描述：
     1、提取nc文件中的变量
     2、将相应维度提取，建立字典
@@ -49,170 +47,205 @@ def extract5nc(file, varname):
     参数：
     file: 文件路径
     varname: 变量名
+    only_value: 变量和维度是否只保留数值
     example: data, dimdict = extract5nc(file_ecm, 'h')
-    '''
+    """
     ds = xr.open_dataset(file)
     vardata = ds[varname]
+    ds.close()
     dims = vardata.dims
     dimdict = {}
     for dim in dims:
-        dimdict[dim] = ds[dim].values
-    ds.close()
-    return np.array(vardata), dimdict
+        if only_value:
+            dimdict[dim] = vardata[dim].values
+        else:
+            dimdict[dim] = ds[dim]
+    if only_value:
+        vardata = np.array(vardata)
+    return vardata, dimdict
 
 
 def _numpy_to_nc_type(numpy_type):
     """将NumPy数据类型映射到NetCDF数据类型"""
     numpy_to_nc = {
-        'float32': 'f4',
-        'float64': 'f8',
-        'int8': 'i1',
-        'int16': 'i2',
-        'int32': 'i4',
-        'int64': 'i8',
-        'uint8': 'u1',
-        'uint16': 'u2',
-        'uint32': 'u4',
-        'uint64': 'u8',
+        "float32": "f4",
+        "float64": "f8",
+        "int8": "i1",
+        "int16": "i2",
+        "int32": "i4",
+        "int64": "i8",
+        "uint8": "u1",
+        "uint16": "u2",
+        "uint32": "u4",
+        "uint64": "u8",
     }
-    return numpy_to_nc.get(str(numpy_type), 'f4')  # 默认使用 'float32'
+    # 确保传入的是字符串类型，如果不是，则转换为字符串
+    numpy_type_str = str(numpy_type) if not isinstance(numpy_type, str) else numpy_type
+    return numpy_to_nc.get(numpy_type_str, "f4")  # 默认使用 'float32'
 
 
-def write2nc(file, data, varname, coords, mode):
-    '''
+def _calculate_scale_and_offset(data, n=16):
+    if not isinstance(data, np.ndarray):
+        raise ValueError("Input data must be a NumPy array.")
+
+    # 使用 nan_to_num 来避免 NaN 值对 min 和 max 的影响
+    data_min = np.nanmin(data)
+    data_max = np.nanmax(data)
+
+    if np.isnan(data_min) or np.isnan(data_max):
+        raise ValueError("Input data contains NaN values, which are not allowed.")
+
+    scale_factor = (data_max - data_min) / (2**n - 1)
+    add_offset = data_min + 2 ** (n - 1) * scale_factor
+
+    return scale_factor, add_offset
+
+
+def write2nc(file, data, varname=None, coords=None, mode="w", scale_offset_switch=True, compile_switch=True):
+    """
     description: 写入数据到nc文件
+
     参数：
     file: 文件路径
     data: 数据
     varname: 变量名
     coords: 坐标，字典，键为维度名称，值为坐标数据
     mode: 写入模式，'w'为写入，'a'为追加
+    scale_offset_switch: 是否使用scale_factor和add_offset，默认为True
+    compile_switch: 是否使用压缩参数，默认为True
+
     example: write2nc(r'test.nc', data, 'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')
-    '''
-    # 判断mode是写入还是追加
-    if mode == 'w':
-        if os.path.exists(file):
-            os.remove(file)
-            print("Warning: File already exists. Deleting it.")
-    elif mode == 'a':
-        if not os.path.exists(file):
-            print("Warning: File doesn't exist. Creating a new file.")
-            mode = 'w'
+    """
+    # 设置压缩参数
+    kwargs = {"zlib": True, "complevel": 4} if compile_switch else {}
+
+    # 检查文件存在性并根据模式决定操作
+    if mode == "w" and os.path.exists(file):
+        os.remove(file)
+    elif mode == "a" and not os.path.exists(file):
+        mode = "w"
 
     # 打开 NetCDF 文件
     with nc.Dataset(file, mode, format="NETCDF4") as ncfile:
-        # 处理坐标
+        # 如果 data 是 DataArray 并且没有提供 varname 和 coords
+        if varname is None and coords is None and isinstance(data, xr.DataArray):
+            data.to_netcdf(file, mode=mode)
+            return
+
+        # 添加坐标
         for dim, coord_data in coords.items():
-            add_coords = True
-            # 判断坐标是否存在，若存在，则替换/报错
-            if ncfile.dimensions:
-                # 返回字典，字典、列表、元组若为空，都表示False
-                if dim in ncfile.dimensions:
-                    # del nc.dimensions[dim]
-                    if len(coord_data) != len(ncfile.dimensions[dim]):
-                        raise ValueError(
-                            "Length of coordinate does not match the dimension length.")
-                    else:
-                        add_coords = False
-                        print(
-                            f"Warning: Coordinate '{dim}' already exists. Replacing it.")
-                        ncfile.variables[dim][:] = np.array(coord_data)
-            if add_coords:
-                # 创建新坐标
-                ncfile.createDimension(dim, len(coord_data))
-                ncfile.createVariable(dim, _numpy_to_nc_type(
-                    coord_data.dtype), (dim,))
-                ncfile.variables[dim][:] = np.array(coord_data)
-
-        # 判断变量是否存在，若存在，则删除原变量
-        add_var = True
-        if varname in ncfile.variables:
-            print(f"Warning: Variable '{varname}' already exists.")
-            if data.shape != ncfile.variables[varname].shape:
-                raise ValueError(
-                    "Shape of data does not match the variable shape.")
+            if dim in ncfile.dimensions:
+                if len(coord_data) != len(ncfile.dimensions[dim]):
+                    raise ValueError(f"Length of coordinate '{dim}' does not match the dimension length.")
+                else:
+                    ncfile.variables[dim][:] = np.array(coord_data)
             else:
-                # 写入数据
-                ncfile.variables[varname][:] = data
-                add_var = False
-                print(
-                    f"Warning: Variable '{varname}' already exists. Replacing it.")
+                ncfile.createDimension(dim, len(coord_data))
+                var = ncfile.createVariable(dim, _numpy_to_nc_type(coord_data.dtype), (dim,), **kwargs)
+                var[:] = np.array(coord_data)
 
-        if add_var:
-            # 创建变量及其维度
-            dim_names = tuple(coords.keys())  # 使用coords传入的维度名称
-            ncfile.createVariable(
-                varname, _numpy_to_nc_type(data.dtype), dim_names)
-            # ncfile.createVariable('data', 'f4', ('time','lev'))
+                # 如果坐标数据有属性，则添加到 NetCDF 变量
+                if isinstance(coord_data, xr.DataArray) and coord_data.attrs:
+                    for attr_name, attr_value in coord_data.attrs.items():
+                        var.setncattr(attr_name, attr_value)
 
-            # 写入数据
-            ncfile.variables[varname][:] = data
+        # 添加或更新变量
+        if varname in ncfile.variables:
+            if data.shape != ncfile.variables[varname].shape:
+                raise ValueError(f"Shape of data does not match the variable shape for '{varname}'.")
+            ncfile.variables[varname][:] = np.array(data)
+        else:
+            # 创建变量
+            dim_names = tuple(coords.keys())
+            if scale_offset_switch:
+                scale_factor, add_offset = _calculate_scale_and_offset(np.array(data))
+                dtype = "i2"
+                var = ncfile.createVariable(varname, dtype, dim_names, fill_value=-32767, **kwargs)
+                var.setncattr("scale_factor", scale_factor)
+                var.setncattr("add_offset", add_offset)
+            else:
+                dtype = _numpy_to_nc_type(data.dtype)
+                var = ncfile.createVariable(varname, dtype, dim_names, **kwargs)
+            var[:] = np.array(data)
 
-        # 判断维度是否匹配
-        if len(data.shape) != len(coords):
-            raise ValueError(
-                "Number of dimensions does not match the data shape.")
+        # 添加属性
+        if isinstance(data, xr.DataArray) and data.attrs:
+            for key, value in data.attrs.items():
+                if key not in ["scale_factor", "add_offset", "_FillValue", "missing_value"] or not scale_offset_switch:
+                    var.setncattr(key, value)
 
 
-def merge5nc(file_list, var_name, dim_name, target_filename):
+def merge5nc(file_list, var_name=None, dim_name=None, target_filename=None):
     """
-    批量提取 nc 文件中的某一变量，按照某一维度合并后写入新的 nc 文件。
+    批量提取 nc 文件中的变量，按照某一维度合并后写入新的 nc 文件。
+    如果 var_name 是字符串，则认为是单变量；如果是列表，且只有一个元素，也是单变量；
+    如果列表元素大于1，则是多变量；如果 var_name 是 None，则合并所有变量。
 
     参数：
     file_list：nc 文件路径列表
-    var_name：要提取的变量名
+    var_name：要提取的变量名或变量名列表，默认为 None，表示提取所有变量
     dim_name：用于合并的维度名
     target_filename：合并后的目标文件名
-    example: merge5nc(file_list, 'sst', 'time', 'merged_data.nc')
+    
+    example: 
+    merge5nc(file_list, var_name='data', dim_name='time', target_filename='merged.nc')
+    merge5nc(file_list, var_name=['data1', 'data2'], dim_name='time', target_filename='merged.nc')
+    merge5nc(file_list, var_name=None, dim_name='time', target_filename='merged.nc')
     """
-    data_list = []
-    for i, file in enumerate(file_list):
-        print(f"\rReading file {i + 1}/{len(file_list)}...", end="")
-        ds = xr.open_dataset(file)
-        var = ds[var_name]
-        data_list.append(var)
+    if isinstance(file_list, str):
+        file_list = [file_list]
+    
+    # 初始化变量名列表
+    var_names = None
+
+    # 判断 var_name 是单变量、多变量还是合并所有变量
+    if var_name is None:
+        # 获取第一个文件中的所有变量名
+        ds = xr.open_dataset(file_list[0])
+        var_names = list(ds.variables.keys())
         ds.close()
-    print("\nMerging data...")
-    data = xr.concat(data_list, dim=dim_name)
-    print("Writing data to file...")
-    if os.path.exists(target_filename):
-        print("Warning: The target file already exists.")
-        print("Removing existing file...")
-        os.remove(target_filename)
-    data.to_netcdf(target_filename)
+    elif isinstance(var_name, str):
+        var_names = [var_name]
+    elif isinstance(var_name, list):
+        var_names = var_name
+    else:
+        raise ValueError("var_name must be a string, a list of strings, or None")
 
-
-def merge5nc_vars(file_list, var_names, dim_name, target_filename):
-    """
-    批量提取 nc 文件中的两个变量，按照某一维度合并后写入新的 nc 文件。
-
-    参数：
-    file_list：nc 文件路径列表
-    var_names：要提取的变量名列表，例如 ['u', 'v']
-    dim_name：用于合并的维度名
-    target_filename：合并后的目标文件名
-
-    example: merge5nc_vars(file_list, ['u', 'v'], 'time', 'merged_data.nc')
-    """
-    data_lists = [[] for _ in var_names]
-    for i, file in enumerate(file_list):
-        print(f"\rReading file {i + 1}/{len(file_list)}...", end="")
-        ds = xr.open_dataset(file)
-        for j, var_name in enumerate(var_names):
-            var = ds[var_name]
-            data_lists[j].append(var)
-        ds.close()
-    print("\nMerging data...")
+    # 初始化合并数据字典
     merged_data = {}
-    for var_name, data_list in zip(var_names, data_lists):
-        merged_data[var_name] = xr.concat(data_list, dim=dim_name)
+
+    # 遍历文件列表
+    for i, file in enumerate(file_list):
+        print(f"\rReading file {i + 1}/{len(file_list)}...", end="")
+        ds = xr.open_dataset(file)
+        for var_name in var_names:
+            var = ds[var_name]
+            # 如果变量包含合并维度，则合并它们
+            if dim_name in var.dims:
+                if var_name not in merged_data:
+                    merged_data[var_name] = [var]
+                else:
+                    merged_data[var_name].append(var)
+            # 如果变量不包含合并维度，则仅保留第一个文件中的值
+            else:
+                if var_name not in merged_data:
+                    merged_data[var_name] = var
+        ds.close()
+
+    print("\nMerging data...")
+    for var_name in merged_data:
+        if isinstance(merged_data[var_name], list):
+            merged_data[var_name] = xr.concat(merged_data[var_name], dim=dim_name)
+
+    merged_data = xr.Dataset(merged_data)
+
     print("Writing data to file...")
-    ds_merged = xr.Dataset(merged_data)
     if os.path.exists(target_filename):
         print("Warning: The target file already exists.")
         print("Removing existing file...")
         os.remove(target_filename)
-    ds_merged.to_netcdf(target_filename)
+    merged_data.to_netcdf(target_filename)
+    print(f'File "{target_filename}" has been created.')
 
 
 def modify_var_value(nc_file_path, variable_name, new_value):
@@ -228,17 +261,15 @@ def modify_var_value(nc_file_path, variable_name, new_value):
     """
     try:
         # Open the NetCDF file
-        dataset = nc.Dataset(nc_file_path, 'r+')
+        dataset = nc.Dataset(nc_file_path, "r+")
         # Get the variable to be modified
         variable = dataset.variables[variable_name]
         # Modify the value of the variable
         variable[:] = new_value
         dataset.close()
-        print(
-            f"Successfully modified variable {variable_name} in {nc_file_path}.")
+        print(f"Successfully modified variable {variable_name} in {nc_file_path}.")
     except Exception as e:
-        print(
-            f"An error occurred while modifying variable {variable_name} in {nc_file_path}: {e}")
+        print(f"An error occurred while modifying variable {variable_name} in {nc_file_path}: {e}")
 
 
 def modify_var_attr(nc_file_path, variable_name, attribute_name, attribute_value):
@@ -253,15 +284,13 @@ def modify_var_attr(nc_file_path, variable_name, attribute_name, attribute_value
     example: modify_var_attr('test.nc', 'data', 'long_name', 'This is a test variable.')
     """
     try:
-        ds = nc.Dataset(nc_file_path, 'r+')
+        ds = nc.Dataset(nc_file_path, "r+")
         if variable_name not in ds.variables:
-            raise ValueError(
-                f"Variable '{variable_name}' not found in the NetCDF file.")
+            raise ValueError(f"Variable '{variable_name}' not found in the NetCDF file.")
 
         variable = ds.variables[variable_name]
         if attribute_name in variable.ncattrs():
-            print(
-                f"Warning: Attribute '{attribute_name}' already exists. Replacing it.")
+            print(f"Warning: Attribute '{attribute_name}' already exists. Replacing it.")
             variable.setncattr(attribute_name, attribute_value)
         else:
             print(f"Adding attribute '{attribute_name}'...")
@@ -284,27 +313,23 @@ def rename_var_or_dim(ncfile_path, old_name, new_name):
     example: rename_var_or_dim('test.nc', 'time', 'ocean_time')
     """
     try:
-        with nc.Dataset(ncfile_path, 'r+') as dataset:
+        with nc.Dataset(ncfile_path, "r+") as dataset:
             # If the old name is not found as a variable or dimension, print a message
             if old_name not in dataset.variables and old_name not in dataset.dimensions:
-                print(
-                    f"Variable or dimension {old_name} not found in the file.")
+                print(f"Variable or dimension {old_name} not found in the file.")
 
             # Attempt to rename the variable
             if old_name in dataset.variables:
                 dataset.renameVariable(old_name, new_name)
-                print(
-                    f"Successfully renamed variable {old_name} to {new_name}.")
+                print(f"Successfully renamed variable {old_name} to {new_name}.")
 
             # Attempt to rename the dimension
             if old_name in dataset.dimensions:
                 # Check if the new dimension name already exists
                 if new_name in dataset.dimensions:
-                    raise ValueError(
-                        f"Dimension name {new_name} already exists in the file.")
+                    raise ValueError(f"Dimension name {new_name} already exists in the file.")
                 dataset.renameDimension(old_name, new_name)
-                print(
-                    f"Successfully renamed dimension {old_name} to {new_name}.")
+                print(f"Successfully renamed dimension {old_name} to {new_name}.")
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -315,7 +340,7 @@ def check_ncfile(ncfile, if_delete=False):
         return False
 
     try:
-        with nc.Dataset(ncfile, 'r') as f:
+        with nc.Dataset(ncfile, "r") as f:
             # 确保f被使用，这里我们检查文件中变量的数量
             if len(f.variables) > 0:
                 return True
@@ -338,8 +363,51 @@ def check_ncfile(ncfile, if_delete=False):
         return False
 
 
-if __name__ == '__main__':
+def convert_longitude(ds, lon_name="longitude", convert=180):
+    """
+    将经度数组转换为指定的范围。
 
+    参数：
+    ds (xarray.Dataset): 包含经度数据的xarray数据集。
+    lon_name (str): 经度变量的名称，默认为"longitude"。
+    convert (int): 转换目标范围，可以是180或360，默认为180。
+
+    返回值：
+    xarray.Dataset: 经度转换后的xarray数据集。
+    """
+    to_which = int(convert)
+    if to_which not in [180, 360]:
+        raise ValueError("to_which must be '180' or '360'")
+
+    if to_which == 180:
+        ds = ds.assign_coords({lon_name: (ds[lon_name] + 180) % 360 - 180})
+    elif to_which == 360:
+        ds = ds.assign_coords({lon_name: (ds[lon_name] + 360) % 360})
+
+    return ds.sortby(lon_name)
+
+
+def nc_isel(ncfile, dim_name, slice_list):
+    """
+    Description: Choose the data by the index of the dimension
+
+    Parameters:
+        ncfile: str, the path of the netCDF file
+        dim_name: str, the name of the dimension
+        slice_list: list, the index of the dimension
+
+    slice_list example: slice_list = [[y*12+m for m in range(11,14)] for y in range(84)]
+                    or
+                        slice_list = [y * 12 + m for y in range(84) for m in range(11, 14)]
+    """
+    ds = xr.open_dataset(ncfile)
+    slice_list = np.array(slice_list).flatten()
+    slice_list = [int(i) for i in slice_list]
+    ds_new = ds.isel(**{dim_name: slice_list})
+    ds.close()
+    return ds_new
+
+
+if __name__ == "__main__":
     data = np.random.rand(100, 50)
-    write2nc(r'test.nc', data,
-             'data', {'time': np.linspace(0, 120, 100), 'lev': np.linspace(0, 120, 50)}, 'a')
+    write2nc(r"test.nc", data, "data", {"time": np.linspace(0, 120, 100), "lev": np.linspace(0, 120, 50)}, "a")

@@ -35,8 +35,7 @@ def sign_in_meteorological_home(email, password):
         response = s.get(url)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'lxml')
-        login_hash = soup.find('form', attrs={'name': 'login'})[
-            'action'].split('loginhash=')[1]
+        login_hash = soup.find('form', attrs={'name': 'login'})['action'].split('loginhash=')[1]
         return login_hash
 
     def get_login_formhash():
@@ -58,16 +57,14 @@ def sign_in_meteorological_home(email, password):
     def write_response(response, default_path=r'F:\response_气象家园.txt'):
         with open(default_path, 'w', encoding='utf-8') as f:
             f.write('-'*350+'\n')
-            f.write(time.strftime(
-                '%Y-%m-%d %H:%M:%S', time.localtime()) + '\n')
+            f.write(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) + '\n')
             f.write(response.text)
             f.write('-'*350+'\n')
 
     def login():
         url = 'http://bbs.06climate.com/member.php?'
         # 登录密码需要转码为 216fc900fb57c27dd3c5e3dfbcac1849
-        mydata['password'] = hashlib.md5(
-            mydata['password'].encode()).hexdigest()
+        mydata['password'] = hashlib.md5(mydata['password'].encode()).hexdigest()
         credentials = {
             'password': mydata['password'],
         }
@@ -97,8 +94,7 @@ def sign_in_meteorological_home(email, password):
             'Referer': 'http://bbs.06climate.com/member.php?mod=logging&action=login',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
         }
-        response = s.post(url, params=query_params,
-                          data=from_data, headers=head)
+        response = s.post(url, params=query_params, data=from_data, headers=head)
         if '欢迎' in response.text:
             print('           [bold green]登录成功')
             try:
@@ -126,8 +122,7 @@ def sign_in_meteorological_home(email, password):
             s.cookies.update(cookie)
         response = s.get(url, params=query_params, headers=head)
         response.raise_for_status()
-        success_indicators = ['累计签到', '连续签到', '特奖励',
-                              '明日签到', '另奖励', '连续签到', '再连续签到', '奖励', '签到完毕']
+        success_indicators = ['累计签到', '连续签到', '特奖励', '明日签到', '另奖励', '连续签到', '再连续签到', '奖励', '签到完毕']
         if any(indicator in response.text for indicator in success_indicators):
             print('           [bold green]签到完毕')
         else:
@@ -143,8 +138,7 @@ def sign_in_meteorological_home(email, password):
         cumulate = soup.select('.pperwbm .times')[0].text
         continuous = soup.select('.pperwbm .times')[1].text
         last_sign = soup.select('.pperwbm .times')[2].text
-        info = {credit.split(': ')[0]: credit.split(
-            ':')[1], user_group.split(': ')[0]: user_group.split(':')[1], '累计签到': cumulate+'次', '连续签到': continuous+'次', '上次签到': last_sign}
+        info = {credit.split(': ')[0]: credit.split(':')[1], user_group.split(': ')[0]: user_group.split(':')[1], '累计签到': cumulate+'次', '连续签到': continuous+'次', '上次签到': last_sign}
 
         print('[bold blue]-----------签到信息-----------')
         for k, v in info.items():
@@ -157,8 +151,7 @@ def sign_in_meteorological_home(email, password):
             print(f'[bold blue]{k}:  [bold green]{v}')
         print('[bold blue]------------------------------')
 
-    mydata = {'username': None,
-              'email': email, 'password': password}
+    mydata = {'username': None, 'email': email, 'password': password}
     s = requests.Session()
     print('[bold purple]-----------气象家园-----------')
     cookie = login()

@@ -4,8 +4,8 @@
 Author: Liu Kun && 16031215@qq.com
 Date: 2024-11-21 09:47:41
 LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-11-21 10:18:08
-FilePath: \\Python\\My_Funcs\\OAFuncs\\OAFuncs\\oa_tool\\email.py
+LastEditTime: 2024-11-29 20:54:43
+FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\oa_tool\\email.py
 Description:  
 EditPlatform: vscode
 ComputerInfo: XPS 15 9510
@@ -88,7 +88,7 @@ def _send_message(title, content, msg_to):
     print('发送内容为：\n{}\n\n'.format(content))
 
 
-def send(title='Title', content='Content', send_to='16031215@qq.com'):
+def send(title='Title', content=None, send_to='16031215@qq.com'):
     '''
     Description: 发送邮件
 
@@ -103,7 +103,11 @@ def send(title='Title', content='Content', send_to='16031215@qq.com'):
     Example:
         send(title='Title', content='Content', '123@qq.com')
     '''
-    _send_message(title, content, send_to)
+    if content is None:
+        # 避免发送空邮件，或有人误调用
+        return
+    else:
+        _send_message(title, content, send_to)
 
 
 if __name__ == "__main__":
