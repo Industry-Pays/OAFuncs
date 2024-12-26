@@ -55,4 +55,4 @@ oafuncs.oa_help.query
 
 ## Structure
 
-<img title="" src="file:///E:/Code/Python/My_Funcs/OAFuncs/OAFuncs.png" alt="">
+<img title="" src="./OAFuncs.png" alt="">
