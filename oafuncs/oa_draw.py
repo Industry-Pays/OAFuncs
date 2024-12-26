@@ -150,8 +150,6 @@ def add_gridlines(ax, projection=ccrs.PlateCarree(), color="k", alpha=0.5, lines
 
 # ** 添加地图
 def add_cartopy(ax, lon=None, lat=None, projection=ccrs.PlateCarree(), gridlines=True, landcolor="lightgrey", oceancolor="lightblue", cartopy_linewidth=0.5):
-    # Set the projection for the axes
-    ax.set_projection(projection)
 
     # add coastlines
     ax.add_feature(cfeature.LAND, facecolor=landcolor)
