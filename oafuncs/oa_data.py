@@ -15,12 +15,12 @@ Python Version: 3.11
 
 import itertools
 import multiprocessing as mp
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 import numpy as np
 from scipy.interpolate import griddata
 
-__all__ = ["interp_2d"]
+__all__ = ["interp_2d","ParallelExecutor"]
 
 
 def interp_2d(target_x, target_y, origin_x, origin_y, data, method="linear", parallel=True):
@@ -90,6 +90,73 @@ def interp_2d(target_x, target_y, origin_x, origin_y, data, method="linear", par
     return np.array(interpolated_data)
 
 
+class ParallelExecutor:
+    """
+    通用并行计算类，支持多进程和多线程模式。
+
+    使用说明：
+        1. 创建实例时选择模式：
+            - mode="process" 使用多进程（适合 CPU 密集型任务）。
+            - mode="thread" 使用多线程（适合 IO 密集型任务）。
+
+        2. 调用 run 方法：
+            - 参数 func：需要并行执行的函数。
+            - 参数 param_list：参数列表，每个元素是传递给 func 的参数元组。
+
+    示例：
+        # 示例 1：计算平方
+        def compute_square(x):
+            return x * x
+
+        params = [(i,) for i in range(10)]
+        executor = ParallelExecutor(mode="process", max_workers=4)
+        results = executor.run(compute_square, params)
+        print("Results:", results)
+
+        # 示例 2：计算两数之和
+        def compute_sum(a, b):
+            return a + b
+
+        params = [(1, 2), (3, 4), (5, 6)]
+        executor = ParallelExecutor(mode="thread", max_workers=2)
+        results = executor.run(compute_sum, params)
+        print("Results:", results)
+
+    参数：
+        mode (str): 并行模式，"process" 表示多进程，"thread" 表示多线程。
+        max_workers (int): 最大并行工作数，默认为 CPU 核心数减 2。
+    """
+
+    def __init__(self, mode="process", max_workers=mp.cpu_count() - 2):
+        self.mode = mode
+        self.max_workers = max_workers
+        self.executor = ProcessPoolExecutor if mode == "process" else ThreadPoolExecutor
+
+    def run(self, func, param_list):
+        """
+        并行运行指定函数，并确保结果顺序与输入参数顺序一致。
+
+        参数：
+            func (callable): 需要并行执行的函数。
+            param_list (list): 参数列表，每个元素是传递给 func 的参数元组。
+
+        返回：
+            results (list): 按输入顺序返回的结果。
+        """
+        results = [None] * len(param_list)  # 预分配结果数组
+
+        with self.executor(max_workers=self.max_workers) as executor:
+            # 提交任务并保存其索引
+            future_to_index = {executor.submit(func, *params): idx for idx, params in enumerate(param_list)}
+
+            for future in future_to_index:
+                idx = future_to_index[future]  # 获取原始索引
+                results[idx] = future.result()  # 将结果存放到对应位置
+
+        return results
+
+
+# ---------------------------------------------------------------------------------- not used below ----------------------------------------------------------------------------------
 # ** 高维插值函数，插值最后两个维度
 def interp_2d_20241213(target_x, target_y, origin_x, origin_y, data, method="linear"):
     """
@@ -228,8 +295,25 @@ def interp_2d_parallel_20241213(target_x, target_y, origin_x, origin_y, data, me
     return interpolated_data
 
 
+def _test_sum(a,b):
+    return a+b
+
+
 if __name__ == "__main__":
-    import time
+    # 参数列表：每个参数是元组
+    params_list = [(1, 2), (3, 4), (5, 6), (7, 8), (9, 10)]
+
+    # 创建并行执行器
+    executor = ParallelExecutor()
+
+    # 并行运行
+    results = executor.run(_test_sum, params_list)
+
+    # 验证结果顺序
+    print("Params:", params_list)
+    print("Results:", results)
+    pass
+    """ import time
 
     import matplotlib.pyplot as plt
 
@@ -263,4 +347,4 @@ if __name__ == "__main__":
     plt.figure()
     plt.contourf(target_x, target_y, interpolated_data[0, 0, :, :])
     plt.colorbar()
-    plt.show()
+    plt.show() """

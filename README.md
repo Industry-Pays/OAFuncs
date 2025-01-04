@@ -56,3 +56,5 @@ oafuncs.oa_help.query
 ## Structure
 
 <img title="" src="./oafuncs/data_store/OAFuncs.png" alt="">
+
+<img title="OAFuncs" src="https://raw.githubusercontent.com/Industry-Pays/OAFuncs/main/oafuncs/data_store/OAFuncs.png" alt="OAFuncs">
