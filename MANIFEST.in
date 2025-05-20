@@ -1,0 +1,5 @@
+include LICENSE.txt
+include README.md
+recursive-include oafuncs/_data *
+recursive-include oafuncs/oa_down *.txt
+recursive-include oafuncs/_script *.py

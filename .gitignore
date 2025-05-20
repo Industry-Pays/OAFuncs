@@ -1,0 +1,21 @@
+# 忽略 Python 编译文件
+__pycache__/
+*.pyc
+
+# 忽略虚拟环境
+venv/
+.env/
+
+# 忽略敏感信息
+*.token
+*.key
+secrets.txt
+Submit.py
+setup.py
+
+# 忽略 dist 目录（打包生成的文件）
+dist/
+build/
+*.egg-info/
+others
+version
