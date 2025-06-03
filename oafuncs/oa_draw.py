@@ -15,16 +15,16 @@ Python Version: 3.11
 
 import warnings
 
-import cv2
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+import cv2
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from rich import print
 
-__all__ = ["fig_minus", "gif", "add_cartopy", "add_gridlines", "MidpointNormalize", "add_lonlat_unit"]
+__all__ = ["fig_minus", "gif", "movie", "setup_map", "MidpointNormalize"]
 
 warnings.filterwarnings("ignore")
 
@@ -43,15 +43,24 @@ def fig_minus(x_axis: plt.Axes = None, y_axis: plt.Axes = None, colorbar: mpl.co
         plt.Axes | mpl.colorbar.Colorbar | None: The modified axis or colorbar object.
 
     Example:
-        >>> fig_minus(x_axis=ax, y_axis=None, colorbar=colorbar, decimal_places=2, add_spacing=True)
+        >>> fig_minus(x_axis=ax, decimal_places=2, add_spacing=True)
     """
+    current_ticks = None
+    target_object = None
+
     # Determine which object to use and get its ticks
     if x_axis is not None:
         current_ticks = x_axis.get_xticks()
-    if y_axis is not None:
+        target_object = x_axis
+    elif y_axis is not None:
         current_ticks = y_axis.get_yticks()
-    if colorbar is not None:
+        target_object = y_axis
+    elif colorbar is not None:
         current_ticks = colorbar.get_ticks()
+        target_object = colorbar
+    else:
+        print("[yellow]Warning:[/yellow] No valid axis or colorbar provided.")
+        return None
 
     # Find index for adding space to non-negative values if needed
     if add_spacing:
@@ -75,326 +84,314 @@ def fig_minus(x_axis: plt.Axes = None, y_axis: plt.Axes = None, colorbar: mpl.co
     # Apply formatted ticks to the appropriate object
     if x_axis is not None:
         x_axis.set_xticklabels(out_ticks)
-    if y_axis is not None:
+    elif y_axis is not None:
         y_axis.set_yticklabels(out_ticks)
-    if colorbar is not None:
+    elif colorbar is not None:
         colorbar.set_ticklabels(out_ticks)
 
     print("[green]Axis tick labels updated successfully.[/green]")
-    return x_axis or y_axis or colorbar
+    return target_object
 
 
-def gif(image_paths: list[str], output_gif_name: str, frame_duration: float = 200, resize_dimensions: tuple[int, int] = None) -> None:
+def gif(image_paths: list[str], output_gif_name: str, frame_duration: float = 0.2, resize_dimensions: tuple[int, int] = None) -> None:
     """Create a GIF from a list of images.
 
     Args:
         image_paths (list[str]): List of image file paths.
         output_gif_name (str): Name of the output GIF file.
-        frame_duration (float): Duration of each frame in milliseconds.
+        frame_duration (float): Duration of each frame in seconds. Defaults to 0.2.
         resize_dimensions (tuple[int, int], optional): Resize dimensions (width, height). Defaults to None.
 
     Returns:
         None
 
     Example:
-        >>> gif(['image1.png', 'image2.png'], 'output.gif', frame_duration=200, resize_dimensions=(800, 600))
+        >>> gif(['image1.png', 'image2.png'], 'output.gif', frame_duration=0.5, resize_dimensions=(800, 600))
     """
     import imageio.v2 as imageio
-    import numpy as np
     from PIL import Image
+
+    if not image_paths:
+        print("[red]Error:[/red] Image paths list is empty.")
+        return
 
     frames = []
 
-    # 获取目标尺寸
+    # Get target dimensions
     if resize_dimensions is None and image_paths:
-        # 使用第一张图片的尺寸作为标准
         with Image.open(image_paths[0]) as img:
             resize_dimensions = img.size
 
-    # 读取并调整所有图片的尺寸
+    # Read and resize all images
     for image_name in image_paths:
-        with Image.open(image_name) as img:
-            if resize_dimensions:
-                img = img.resize(resize_dimensions, Image.LANCZOS)
-            frames.append(np.array(img))
-
-    # 修改此处：明确使用 frame_duration 值，并将其作为每帧的持续时间（以秒为单位）
-    # 某些版本的 imageio 可能需要以毫秒为单位，或者使用 fps 参数
-    try:
-        # 先尝试直接使用 frame_duration 参数（以秒为单位）
-        imageio.mimsave(output_gif_name, frames, format="GIF", duration=frame_duration)
-    except Exception as e:
-        print(f"[yellow]Warning:[/yellow] Attempting to use fps parameter instead of duration: {e}")
-        # 如果失败，尝试使用 fps 参数（fps = 1/frame_duration）
-        fps = 1.0 / frame_duration if frame_duration > 0 else 5.0
-        imageio.mimsave(output_gif_name, frames, format="GIF", fps=fps)
-
-    print(f"[green]GIF created successfully![/green] Size: {resize_dimensions}, Frame interval: {frame_duration} ms")
-    return
-
-
-def movie(image_files, output_video_path, fps):
-    """
-    从图像文件列表创建视频。
-
-    Args:
-        image_files (list): 按顺序排列的图像文件路径列表。
-        output_video_path (str): 输出视频文件的路径 (例如 'output.mp4')。
-        fps (int): 视频的帧率。
-    """
-    if not image_files:
-        print("错误：图像文件列表为空。")
-        return
-
-    # 读取第一张图片以获取帧尺寸
-    try:
-        frame = cv2.imread(image_files[0])
-        if frame is None:
-            print(f"错误：无法读取第一张图片：{image_files[0]}")
-            return
-        height, width, layers = frame.shape
-        size = (width, height)
-        print(f"视频尺寸设置为：{size}")
-    except Exception as e:
-        print(f"读取第一张图片时出错：{e}")
-        return
-
-    # 选择编解码器并创建VideoWriter对象
-    # 对于 .mp4 文件，常用 'mp4v' 或 'avc1'
-    # 对于 .avi 文件，常用 'XVID' 或 'MJPG'
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # 或者尝试 'avc1', 'XVID' 等
-    out = cv2.VideoWriter(output_video_path, fourcc, fps, size)
-
-    if not out.isOpened():
-        print(f"错误：无法打开视频文件进行写入：{output_video_path}")
-        print("请检查编解码器 ('fourcc') 是否受支持以及路径是否有效。")
-        return
-
-    print(f"开始将图像写入视频：{output_video_path}...")
-    for i, filename in enumerate(image_files):
         try:
-            frame = cv2.imread(filename)
-            if frame is None:
-                print(f"警告：跳过无法读取的图像：{filename}")
-                continue
-            # 确保帧尺寸与初始化时相同，如果需要可以调整大小
-            current_height, current_width, _ = frame.shape
-            if (current_width, current_height) != size:
-                print(f"警告：图像 {filename} 的尺寸 ({current_width}, {current_height}) 与初始尺寸 {size} 不同。将调整大小。")
-                frame = cv2.resize(frame, size)
-
-            out.write(frame)
-            # 打印进度（可选）
-            if (i + 1) % 50 == 0 or (i + 1) == len(image_files):
-                print(f"已处理 {i + 1}/{len(image_files)} 帧")
-
+            with Image.open(image_name) as img:
+                if resize_dimensions:
+                    img = img.resize(resize_dimensions, Image.LANCZOS)
+                frames.append(np.array(img))
         except Exception as e:
-            print(f"处理图像 {filename} 时出错：{e}")
-            continue  # 跳过有问题的帧
+            print(f"[yellow]Warning:[/yellow] Failed to read image {image_name}: {e}")
+            continue
 
-    # 释放资源
-    out.release()
-    print(f"视频创建成功：{output_video_path}")
+    if not frames:
+        print("[red]Error:[/red] No valid images found.")
+        return
 
-
-def add_lonlat_unit(longitudes: list[float] = None, latitudes: list[float] = None, decimal_places: int = 2) -> tuple[list[str], list[str]] | list[str]:
-    """Convert longitude and latitude values to formatted string labels.
-
-    Args:
-        longitudes (list[float], optional): List of longitude values to format.
-        latitudes (list[float], optional): List of latitude values to format.
-        decimal_places (int, optional): Number of decimal places to display. Defaults to 2.
-
-    Returns:
-        tuple[list[str], list[str]] | list[str]: Formatted longitude and/or latitude labels.
-            Returns a tuple of two lists if both longitudes and latitudes are provided,
-            otherwise returns a single list of formatted values.
-
-    Examples:
-        >>> add_lonlat_unit(longitudes=[120, 180], latitudes=[30, 60], decimal_places=1)
-        (['120.0°E', '180.0°'], ['30.0°N', '60.0°N'])
-        >>> add_lonlat_unit(longitudes=[120, -60])
-        ['120.00°E', '60.00°W']
-    """
-
-    def _format_longitude(longitude_values: list[float]) -> list[str] | str:
-        """Format longitude values to string labels with directional indicators.
-
-        Converts numerical longitude values to formatted strings with degree symbols
-        and East/West indicators. Values outside the -180 to 180 range are normalized.
-
-        Args:
-            longitude_values: List of longitude values to format.
-
-        Returns:
-            List of formatted strings if input contains multiple values,
-            or a single string if input contains just one value.
-        """
-        out_list = []
-        for x in longitude_values:
-            if x > 180 or x < -180:
-                print(f"[yellow]Warning:[/yellow] Longitude value {x} outside normal range (-180 to 180)")
-                x = ((x + 180) % 360) - 180  # Normalize to -180 to 180 range
-
-            degrees = round(abs(x), decimal_places)
-            direction = "E" if x >= 0 else "W"
-            out_list.append(f"{degrees:.{decimal_places}f}°{direction}" if x != 0 and x != 180 else f"{degrees}°")
-        return out_list if len(out_list) > 1 else out_list[0]
-
-    def _format_latitude(latitude_values: list[float]) -> list[str] | str:
-        """Format latitude values to string labels with directional indicators.
-
-        Converts numerical latitude values to formatted strings with degree symbols
-        and North/South indicators. Values outside the -90 to 90 range are normalized.
-
-        Args:
-            latitude_values (list[float]): List of latitude values to format
-
-        Returns:
-            list[str] | str: List of formatted strings if input contains multiple values,
-                             or a single string if input contains just one value
-        """
-        out_list = []
-        for y in latitude_values:
-            if y > 90 or y < -90:
-                print(f"[yellow]Warning:[/yellow] Latitude value {y} outside valid range (-90 to 90)")
-                y = min(max(y % 180 - 90, -90), 90)  # Normalize to -90 to 90 range
-
-            degrees = round(abs(y), decimal_places)
-            direction = "N" if y >= 0 else "S"
-            out_list.append(f"{degrees:.{decimal_places}f}°{direction}" if y != 0 else f"{degrees}°")
-        return out_list if len(out_list) > 1 else out_list[0]
-
-    # Input validation
-    if longitudes is not None and not isinstance(longitudes, list):
-        longitudes = [longitudes]  # Convert single value to list
-    if latitudes is not None and not isinstance(latitudes, list):
-        latitudes = [latitudes]  # Convert single value to list
-
-    if longitudes and latitudes:
-        result = _format_longitude(longitudes), _format_latitude(latitudes)
-    elif longitudes:
-        result = _format_longitude(longitudes)
-    elif latitudes:
-        result = _format_latitude(latitudes)
-    else:
-        result = []
-
-    print("[green]Longitude and latitude values formatted successfully.[/green]")
-    return result
+    # Create GIF
+    try:
+        imageio.mimsave(output_gif_name, frames, format="GIF", duration=frame_duration)
+        print(f"[green]GIF created successfully![/green] Size: {resize_dimensions}, Frame duration: {frame_duration}s")
+    except Exception as e:
+        print(f"[red]Error:[/red] Failed to create GIF: {e}")
 
 
-def add_gridlines(axes: plt.Axes, longitude_lines: list[float] = None, latitude_lines: list[float] = None, map_projection: ccrs.Projection = ccrs.PlateCarree(), line_color: str = "k", line_alpha: float = 0.5, line_style: str = "--", line_width: float = 0.5) -> tuple[plt.Axes, mpl.ticker.Locator]:
-    """Add gridlines to a map.
+def movie(image_files: list[str], output_video_path: str, fps: int) -> None:
+    """Create a video from a list of image files.
 
     Args:
-        axes (plt.Axes): The axes to add gridlines to.
-        longitude_lines (list[float], optional): List of longitude positions for gridlines.
-        latitude_lines (list[float], optional): List of latitude positions for gridlines.
-        map_projection (ccrs.Projection, optional): Coordinate reference system. Defaults to PlateCarree.
-        line_color (str, optional): Line color. Defaults to "k".
-        line_alpha (float, optional): Line transparency. Defaults to 0.5.
-        line_style (str, optional): Line style. Defaults to "--".
-        line_width (float, optional): Line width. Defaults to 0.5.
-
-    Returns:
-        tuple[plt.Axes, mpl.ticker.Locator]: The axes and gridlines objects.
-
-    Example:
-        >>> add_gridlines(axes, longitude_lines=[0, 30], latitude_lines=[-90, 90], map_projection=ccrs.PlateCarree())
-        >>> axes, gl = add_gridlines(axes, longitude_lines=[0, 30], latitude_lines=[-90, 90])
-    """
-    from matplotlib import ticker as mticker
-
-    # add gridlines
-    gl = axes.gridlines(crs=map_projection, draw_labels=True, linewidth=line_width, color=line_color, alpha=line_alpha, linestyle=line_style)
-    gl.right_labels = False
-    gl.top_labels = False
-    gl.xformatter = LongitudeFormatter(zero_direction_label=False)
-    gl.yformatter = LatitudeFormatter()
-
-    if longitude_lines is not None:
-        gl.xlocator = mticker.FixedLocator(np.array(longitude_lines))
-    if latitude_lines is not None:
-        gl.ylocator = mticker.FixedLocator(np.array(latitude_lines))
-
-    # print("[green]Gridlines added successfully.[/green]")
-    return axes, gl
-
-
-def add_cartopy(axes: plt.Axes, longitude_data: np.ndarray = None, latitude_data: np.ndarray = None, map_projection: ccrs.Projection = ccrs.PlateCarree(), show_gridlines: bool = True, land_color: str = "lightgrey", ocean_color: str = "lightblue", coastline_linewidth: float = 0.5) -> None:
-    """Add cartopy features to a map.
-
-    Args:
-        axes (plt.Axes): The axes to add map features to.
-        longitude_data (np.ndarray, optional): Array of longitudes to set map extent.
-        latitude_data (np.ndarray, optional): Array of latitudes to set map extent.
-        map_projection (ccrs.Projection, optional): Coordinate reference system. Defaults to PlateCarree.
-        show_gridlines (bool, optional): Whether to add gridlines. Defaults to True.
-        land_color (str, optional): Color of land. Defaults to "lightgrey".
-        ocean_color (str, optional): Color of oceans. Defaults to "lightblue".
-        coastline_linewidth (float, optional): Line width for coastlines. Defaults to 0.5.
+        image_files (list[str]): List of image file paths in order.
+        output_video_path (str): Output video file path (e.g., 'output.mp4').
+        fps (int): Video frame rate.
 
     Returns:
         None
 
     Example:
-        >>> add_cartopy(axes, longitude_data=lon_data, latitude_data=lat_data, map_projection=ccrs.PlateCarree(), show_gridlines=True)
-        >>> axes = add_cartopy(axes, longitude_data=None, latitude_data=None, map_projection=ccrs.PlateCarree(), show_gridlines=False)
-
+        >>> movie(['img1.jpg', 'img2.jpg'], 'output.mp4', fps=30)
     """
-    # add coastlines
-    axes.add_feature(cfeature.LAND, facecolor=land_color)
-    axes.add_feature(cfeature.OCEAN, facecolor=ocean_color)
-    axes.add_feature(cfeature.COASTLINE, linewidth=coastline_linewidth)
-    # axes.add_feature(cfeature.BORDERS, linewidth=coastline_linewidth, linestyle=":")
+    if not image_files:
+        print("[red]Error:[/red] Image files list is empty.")
+        return
 
-    # add gridlines
+    # Read first image to get frame dimensions
+    try:
+        frame = cv2.imread(image_files[0])
+        if frame is None:
+            print(f"[red]Error:[/red] Cannot read first image: {image_files[0]}")
+            return
+        height, width, layers = frame.shape
+        size = (width, height)
+        print(f"Video dimensions set to: {size}")
+    except Exception as e:
+        print(f"[red]Error:[/red] Error reading first image: {e}")
+        return
+
+    # Create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    out = cv2.VideoWriter(output_video_path, fourcc, fps, size)
+
+    if not out.isOpened():
+        print(f"[red]Error:[/red] Cannot open video file for writing: {output_video_path}")
+        print("Please check if the codec is supported and the path is valid.")
+        return
+
+    print(f"Starting to write images to video: {output_video_path}...")
+    successful_frames = 0
+
+    for i, filename in enumerate(image_files):
+        try:
+            frame = cv2.imread(filename)
+            if frame is None:
+                print(f"[yellow]Warning:[/yellow] Skipping unreadable image: {filename}")
+                continue
+
+            # Ensure frame dimensions match initialization
+            current_height, current_width, _ = frame.shape
+            if (current_width, current_height) != size:
+                frame = cv2.resize(frame, size)
+
+            out.write(frame)
+            successful_frames += 1
+
+            # Print progress
+            if (i + 1) % 50 == 0 or (i + 1) == len(image_files):
+                print(f"Processed {i + 1}/{len(image_files)} frames")
+
+        except Exception as e:
+            print(f"[yellow]Warning:[/yellow] Error processing image {filename}: {e}")
+            continue
+
+    # Release resources
+    out.release()
+    print(f"[green]Video created successfully:[/green] {output_video_path} ({successful_frames} frames)")
+
+
+def setup_map(
+    axes: plt.Axes,
+    longitude_data: np.ndarray = None,
+    latitude_data: np.ndarray = None,
+    map_projection: ccrs.Projection = ccrs.PlateCarree(),
+    # Map features
+    show_land: bool = True,
+    show_ocean: bool = True,
+    show_coastline: bool = True,
+    show_borders: bool = False,
+    land_color: str = "lightgrey",
+    ocean_color: str = "lightblue",
+    coastline_linewidth: float = 0.5,
+    # Gridlines and ticks
+    show_gridlines: bool = False,
+    longitude_ticks: list[float] = None,
+    latitude_ticks: list[float] = None,
+    tick_decimals: int = 0,
+    # Gridline styling
+    grid_color: str = "k",
+    grid_alpha: float = 0.5,
+    grid_style: str = "--",
+    grid_width: float = 0.5,
+    # Label options
+    show_labels: bool = True,
+    left_labels: bool = True,
+    bottom_labels: bool = True,
+    right_labels: bool = False,
+    top_labels: bool = False,
+) -> plt.Axes:
+    """Setup a complete cartopy map with customizable features.
+
+    Args:
+        axes (plt.Axes): The axes to setup as a map.
+        longitude_data (np.ndarray, optional): Array of longitudes to set map extent.
+        latitude_data (np.ndarray, optional): Array of latitudes to set map extent.
+        map_projection (ccrs.Projection, optional): Coordinate reference system. Defaults to PlateCarree.
+
+        show_land (bool, optional): Whether to show land features. Defaults to True.
+        show_ocean (bool, optional): Whether to show ocean features. Defaults to True.
+        show_coastline (bool, optional): Whether to show coastlines. Defaults to True.
+        show_borders (bool, optional): Whether to show country borders. Defaults to False.
+        land_color (str, optional): Color of land. Defaults to "lightgrey".
+        ocean_color (str, optional): Color of oceans. Defaults to "lightblue".
+        coastline_linewidth (float, optional): Line width for coastlines. Defaults to 0.5.
+
+        show_gridlines (bool, optional): Whether to show gridlines. Defaults to False.
+        longitude_ticks (list[float], optional): Longitude tick positions.
+        latitude_ticks (list[float], optional): Latitude tick positions.
+        tick_decimals (int, optional): Number of decimal places for tick labels. Defaults to 0.
+
+        grid_color (str, optional): Gridline color. Defaults to "k".
+        grid_alpha (float, optional): Gridline transparency. Defaults to 0.5.
+        grid_style (str, optional): Gridline style. Defaults to "--".
+        grid_width (float, optional): Gridline width. Defaults to 0.5.
+
+        show_labels (bool, optional): Whether to show coordinate labels. Defaults to True.
+        left_labels (bool, optional): Show labels on left side. Defaults to True.
+        bottom_labels (bool, optional): Show labels on bottom. Defaults to True.
+        right_labels (bool, optional): Show labels on right side. Defaults to False.
+        top_labels (bool, optional): Show labels on top. Defaults to False.
+
+    Returns:
+        plt.Axes: The configured map axes.
+
+    Examples:
+        >>> # Basic map setup
+        >>> ax = setup_map(ax)
+
+        >>> # Map with gridlines and custom extent
+        >>> ax = setup_map(ax, longitude_data=lon, latitude_data=lat, show_gridlines=True)
+
+        >>> # Customized map
+        >>> ax = setup_map(
+        ...     ax,
+        ...     show_gridlines=True,
+        ...     longitude_ticks=[0, 30, 60],
+        ...     latitude_ticks=[-30, 0, 30],
+        ...     land_color='wheat',
+        ...     ocean_color='lightcyan'
+        ... )
+    """
+    from matplotlib import ticker as mticker
+
+    # Add map features
+    if show_land:
+        axes.add_feature(cfeature.LAND, facecolor=land_color)
+    if show_ocean:
+        axes.add_feature(cfeature.OCEAN, facecolor=ocean_color)
+    if show_coastline:
+        axes.add_feature(cfeature.COASTLINE, linewidth=coastline_linewidth)
+    if show_borders:
+        axes.add_feature(cfeature.BORDERS, linewidth=coastline_linewidth, linestyle=":")
+
+    # Setup coordinate formatting
+    lon_formatter = LongitudeFormatter(zero_direction_label=False, number_format=f".{tick_decimals}f")
+    lat_formatter = LatitudeFormatter(number_format=f".{tick_decimals}f")
+
+    # Handle gridlines and ticks
     if show_gridlines:
-        axes, gl = add_gridlines(axes, map_projection=map_projection)
+        # Add gridlines with labels
+        gl = axes.gridlines(crs=map_projection, draw_labels=show_labels, linewidth=grid_width, color=grid_color, alpha=grid_alpha, linestyle=grid_style)
 
-    # set longitude and latitude format
-    lon_formatter = LongitudeFormatter(zero_direction_label=False)
-    lat_formatter = LatitudeFormatter()
-    axes.xaxis.set_major_formatter(lon_formatter)
-    axes.yaxis.set_major_formatter(lat_formatter)
+        # Configure label positions
+        gl.left_labels = left_labels
+        gl.bottom_labels = bottom_labels
+        gl.right_labels = right_labels
+        gl.top_labels = top_labels
 
-    # set extent
+        # Set formatters
+        gl.xformatter = lon_formatter
+        gl.yformatter = lat_formatter
+
+        # Set custom tick positions if provided
+        if longitude_ticks is not None:
+            gl.xlocator = mticker.FixedLocator(np.array(longitude_ticks))
+        if latitude_ticks is not None:
+            gl.ylocator = mticker.FixedLocator(np.array(latitude_ticks))
+
+    elif show_labels:
+        # Add tick labels without gridlines
+        # Use current tick positions if not provided
+        if longitude_ticks is None:
+            longitude_ticks = axes.get_xticks()
+        if latitude_ticks is None:
+            latitude_ticks = axes.get_yticks()
+
+        # Set tick positions and formatters
+        axes.set_xticks(longitude_ticks, crs=map_projection)
+        axes.set_yticks(latitude_ticks, crs=map_projection)
+        axes.xaxis.set_major_formatter(lon_formatter)
+        axes.yaxis.set_major_formatter(lat_formatter)
+
+    # Set map extent if data is provided
     if longitude_data is not None and latitude_data is not None:
         lon_min, lon_max = np.nanmin(longitude_data), np.nanmax(longitude_data)
         lat_min, lat_max = np.nanmin(latitude_data), np.nanmax(latitude_data)
         axes.set_extent([lon_min, lon_max, lat_min, lat_max], crs=map_projection)
 
-    # print("[green]Cartopy features added successfully.[/green]")
     return axes
 
 
 class MidpointNormalize(mpl.colors.Normalize):
-    """Custom normalization class to center 0 value.
+    """Custom normalization class to center a specific value.
 
     Args:
-        min_value (float, optional): Minimum data value. Defaults to None.
-        max_value (float, optional): Maximum data value. Defaults to None.
-        center_value (float, optional): Center value for normalization. Defaults to None.
-        clip_values (bool, optional): Whether to clip data outside the range. Defaults to False.
+        vmin (float, optional): Minimum data value. Defaults to None.
+        vmax (float, optional): Maximum data value. Defaults to None.
+        vcenter (float, optional): Center value for normalization. Defaults to 0.
+        clip (bool, optional): Whether to clip data outside the range. Defaults to False.
 
     Example:
-        >>> norm = MidpointNormalize(min_value=-2, max_value=1, center_value=0)
+        >>> norm = MidpointNormalize(vmin=-2, vmax=1, vcenter=0)
     """
 
-    def __init__(self, min_value: float = None, max_value: float = None, center_value: float = None, clip_values: bool = False) -> None:
-        self.vcenter = center_value
-        super().__init__(min_value, max_value, clip_values)
+    def __init__(self, vmin: float = None, vmax: float = None, vcenter: float = 0, clip: bool = False) -> None:
+        self.vcenter = vcenter
+        super().__init__(vmin, vmax, clip)
 
-    def __call__(self, input_values: np.ndarray, clip_values: bool = None) -> np.ma.MaskedArray:
+    def __call__(self, value: np.ndarray, clip: bool = None) -> np.ma.MaskedArray:
+        # Use the clip parameter from initialization if not provided
+        if clip is None:
+            clip = self.clip
+            
         x, y = [self.vmin, self.vcenter, self.vmax], [0, 0.5, 1.0]
-        return np.ma.masked_array(np.interp(input_values, x, y, left=-np.inf, right=np.inf))
+        result = np.interp(value, x, y)
+        
+        # Apply clipping if requested
+        if clip:
+            result = np.clip(result, 0, 1)
+            
+        return np.ma.masked_array(result)
 
-    def inverse(self, normalized_values: np.ndarray) -> np.ndarray:
+    def inverse(self, value: np.ndarray) -> np.ndarray:
         y, x = [self.vmin, self.vcenter, self.vmax], [0, 0.5, 1]
-        return np.interp(normalized_values, x, y, left=-np.inf, right=np.inf)
-
-    # print("[green]Midpoint normalization applied successfully.[/green]")
+        return np.interp(value, x, y)
 
 
 if __name__ == "__main__":

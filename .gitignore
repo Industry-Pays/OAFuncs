@@ -17,5 +17,5 @@ setup.py
 dist/
 build/
 *.egg-info/
-others
-version
+others/
+version/

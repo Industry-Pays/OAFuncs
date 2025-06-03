@@ -1,21 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Author: Liu Kun && 16031215@qq.com
-Date: 2025-04-04 20:21:59
-LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2025-04-04 20:21:59
-FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\_script\\email.py
-Description:
-EditPlatform: vscode
-ComputerInfo: XPS 15 9510
-SystemInfo: Windows 11
-Python Version: 3.12
-"""
-
-
-
-
 import random
 import smtplib
 from email.header import Header
@@ -25,7 +7,6 @@ from email.mime.text import MIMEText
 from rich import print
 
 __all__ = ["send"]
-
 
 def _email_info():
     email_dict = {

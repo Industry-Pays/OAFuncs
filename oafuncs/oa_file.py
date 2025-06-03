@@ -67,12 +67,16 @@ def link_file(source_pattern: str, destination: str) -> None:
             else:
                 dst_file = destination
 
-            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            # Ensure destination directory exists
+            dst_dir = os.path.dirname(dst_file)
+            if dst_dir:
+                os.makedirs(dst_dir, exist_ok=True)
 
-            if os.path.exists(dst_file):
+            # Remove existing file/link if it exists
+            if os.path.exists(dst_file) or os.path.islink(dst_file):
                 os.remove(dst_file)
+            
             os.symlink(src_file, dst_file)
-
             print(f"[green]Successfully created symbolic link:[/green] [bold]{src_file}[/bold] -> [bold]{dst_file}[/bold]")
         except Exception as e:
             print(f"[red]Failed to create symbolic link:[/red] [bold]{src_file}[/bold]. Error: {e}")
@@ -103,8 +107,12 @@ def copy_file(source_pattern: str, destination: str) -> None:
             else:
                 dst_file = destination
 
-            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            # Ensure destination directory exists
+            dst_dir = os.path.dirname(dst_file)
+            if dst_dir:
+                os.makedirs(dst_dir, exist_ok=True)
 
+            # Remove existing destination if it exists
             if os.path.exists(dst_file):
                 if os.path.isdir(dst_file):
                     shutil.rmtree(dst_file)
@@ -147,15 +155,19 @@ def move_file(source_pattern: str, destination: str) -> None:
             else:
                 dst_file = destination
 
-            os.makedirs(os.path.dirname(dst_file), exist_ok=True)
+            # Ensure destination directory exists
+            dst_dir = os.path.dirname(dst_file)
+            if dst_dir:
+                os.makedirs(dst_dir, exist_ok=True)
 
+            # Remove existing destination if it exists
             if os.path.exists(dst_file):
                 if os.path.isdir(dst_file):
                     shutil.rmtree(dst_file)
                 else:
                     os.remove(dst_file)
+            
             shutil.move(src_file, dst_file)
-
             print(f"[green]Successfully moved:[/green] [bold]{src_file}[/bold] -> [bold]{dst_file}[/bold]")
         except Exception as e:
             print(f"[red]Failed to move:[/red] [bold]{src_file}[/bold]. Error: {e}")
@@ -352,13 +364,13 @@ def mean_size(parent_dir: Union[str, os.PathLike], file_pattern: str, max_files:
         >>> avg_size = mean_size("/data/logs", "*.log", max_files=10, unit="MB")
         >>> print(f"Average log file size is {avg_size} MB")
     """
-    # 获取文件列表
+    # Get file list
     flist = find_file(parent_dir, file_pattern)
     if not flist:
         print(f"[yellow]No files found matching pattern:[/yellow] [bold]{file_pattern}[/bold] in [bold]{parent_dir}[/bold]")
         return 0.0
 
-    # 处理最大文件数限制
+    # Handle max_files limit
     if max_files is not None:
         try:
             max_files = int(max_files)
@@ -369,11 +381,11 @@ def mean_size(parent_dir: Union[str, os.PathLike], file_pattern: str, max_files:
         except (ValueError, TypeError):
             print(f"[yellow]Invalid max_files value:[/yellow] [bold]{max_files}[/bold], using all files")
 
-    # 获取每个文件的大小并过滤掉大小为0的文件
+    # Get file sizes and filter out zero-size files
     size_list = [file_size(f, unit) for f in flist]
     valid_sizes = [size for size in size_list if size > 0]
 
-    # 计算平均值
+    # Calculate average
     if valid_sizes:
         avg_size = sum(valid_sizes) / len(valid_sizes)
         if len(valid_sizes) < len(size_list):

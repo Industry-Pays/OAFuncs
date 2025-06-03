@@ -719,7 +719,7 @@ class _HycomDownloader:
                     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
                     # print(f"{timestamp} - INFO - ", end="") # Output log prefix without newline
                     # print("[bold #3dfc40]Success")
-                    print(f"{timestamp} - RESULT - [bold #3dfc40]Success")
+                    print(f"{timestamp} - INFO - [bold #3dfc40]Success")
                     return
 
             except Exception as e:
@@ -736,7 +736,7 @@ class _HycomDownloader:
                     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
                     # print(f"{timestamp} - ERROR - ", end="")
                     # print("[bold red]Failed")
-                    print(f"{timestamp} - RESULT - [bold red]Failure")
+                    print(f"{timestamp} - INFO - [bold red]Failure")
                     return
 
     async def run(self):

@@ -300,11 +300,13 @@ class ColorProgressBar:
             # 获取终端宽度
             try:
                 term_width = self.bar_length or (shutil.get_terminal_size().columns if self._is_terminal else 80)
+                # print(f'Terminal width: {term_width}')  # 调试输出
             except (AttributeError, OSError):
                 term_width = 80  # 默认终端宽度
 
             # 确保有效宽度不小于最低限制
-            effective_width = max(15, term_width - 40)
+            # effective_width = max(15, term_width - 40)
+            effective_width = max(15, int(term_width * 0.6))  # 保留40个字符用于其他信息
             if effective_width < 10:
                 warnings.warn("Terminal width is too small for proper progress bar rendering.")
                 effective_width = 10  # 设置最低宽度限制
