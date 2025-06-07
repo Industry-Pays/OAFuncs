@@ -733,6 +733,7 @@ class _HycomDownloader:
                     logging.error(f"Giving up on {file_name}")
                     self.count["fail"] += 1
                     count_dict["fail"] += 1
+                    count_dict["fail_data_list"].append(file_name)
                     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3]
                     # print(f"{timestamp} - ERROR - ", end="")
                     # print("[bold red]Failed")
@@ -1091,7 +1092,7 @@ def download(
             end_time += "21"
 
     global count_dict
-    count_dict = {"success": 0, "fail": 0, "skip": 0, "no_data": 0, "total": 0, "no_data_list": []}
+    count_dict = {"success": 0, "fail": 0, "skip": 0, "no_data": 0, "total": 0, "no_data_list": [], "fail_data_list": []}
 
     global fsize_dict
     fsize_dict = {}
@@ -1162,6 +1163,8 @@ def download(
     print("[bold #ecdbfe]=" * mark_len)
     if count_dict["fail"] > 0:
         print("[bold #be5528]Please try again to download the failed data later.")
+        for fail_data in count_dict["fail_data_list"]:
+            print(f"[bold #d81b60]{fail_data}")
     if count_dict["no_data"] > 0:
         print(f"[bold #f90000]{count_dict['no_data']} data entries do not exist in any dataset or version.")
         for no_data in count_dict["no_data_list"]:

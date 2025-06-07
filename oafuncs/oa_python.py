@@ -1,18 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Author: Liu Kun && 16031215@qq.com
-Date: 2025-03-27 16:51:26
-LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2025-04-05 14:17:07
-FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\oa_python.py
-Description:
-EditPlatform: vscode
-ComputerInfo: XPS 15 9510
-SystemInfo: Windows 11
-Python Version: 3.12
-"""
-
 import os
 from typing import List, Optional
 

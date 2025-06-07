@@ -1,18 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Author: Liu Kun && 16031215@qq.com
-Date: 2025-04-25 16:22:52
-LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2025-04-26 19:21:31
-FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\_script\\data_interp.py
-Description:
-EditPlatform: vscode
-ComputerInfo: XPS 15 9510
-SystemInfo: Windows 11
-Python Version: 3.12
-"""
-
 from typing import List, Union
 
 import numpy as np

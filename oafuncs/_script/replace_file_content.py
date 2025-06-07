@@ -1,18 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Author: Liu Kun && 16031215@qq.com
-Date: 2025-03-21 10:02:32
-LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2025-03-21 10:02:33
-FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\_script\\replace_file_concent.py
-Description:
-EditPlatform: vscode
-ComputerInfo: XPS 15 9510
-SystemInfo: Windows 11
-Python Version: 3.12
-"""
-
 import datetime
 import os
 import re

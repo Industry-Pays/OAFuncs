@@ -1,19 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-'''
-Author: Liu Kun && 16031215@qq.com
-Date: 2024-10-14 16:59:26
-LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-11-21 13:16:14
-FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\oa_sign\\ocean.py
-Description:  
-EditPlatform: vscode
-ComputerInfo: XPS 15 9510
-SystemInfo: Windows 11
-Python Version: 3.11
-'''
-
-
 import hashlib
 import time
 import warnings

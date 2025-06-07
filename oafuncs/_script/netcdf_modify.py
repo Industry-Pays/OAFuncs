@@ -1,18 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Author: Liu Kun && 16031215@qq.com
-Date: 2025-04-05 14:00:50
-LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2025-04-05 14:00:50
-FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\_script\\netcdf_modify.py
-Description:
-EditPlatform: vscode
-ComputerInfo: XPS 15 9510
-SystemInfo: Windows 11
-Python Version: 3.12
-"""
-
 import os
 
 import netCDF4 as nc

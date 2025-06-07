@@ -1,18 +1,3 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Author: Liu Kun && 16031215@qq.com
-Date: 2024-09-17 17:26:11
-LastEditors: Liu Kun && 16031215@qq.com
-LastEditTime: 2024-11-21 13:10:47
-FilePath: \\Python\\My_Funcs\\OAFuncs\\oafuncs\\oa_draw.py
-Description:
-EditPlatform: vscode
-ComputerInfo: XPS 15 9510
-SystemInfo: Windows 11
-Python Version: 3.11
-"""
-
 import warnings
 
 import cartopy.crs as ccrs
@@ -337,11 +322,20 @@ def setup_map(
 
     elif show_labels:
         # Add tick labels without gridlines
-        # Use current tick positions if not provided
+        # Generate default tick positions based on current extent if not provided
         if longitude_ticks is None:
-            longitude_ticks = axes.get_xticks()
+            current_extent = axes.get_extent(crs=map_projection)
+            lon_range = current_extent[1] - current_extent[0]
+            # Generate reasonable tick spacing
+            tick_spacing = 5 if lon_range <= 30 else (10 if lon_range <= 90 else 20)
+            longitude_ticks = np.arange(np.ceil(current_extent[0] / tick_spacing) * tick_spacing, current_extent[1] + tick_spacing, tick_spacing)
+
         if latitude_ticks is None:
-            latitude_ticks = axes.get_yticks()
+            current_extent = axes.get_extent(crs=map_projection)
+            lat_range = current_extent[3] - current_extent[2]
+            # Generate reasonable tick spacing
+            tick_spacing = 5 if lat_range <= 30 else (10 if lat_range <= 90 else 20)
+            latitude_ticks = np.arange(np.ceil(current_extent[2] / tick_spacing) * tick_spacing, current_extent[3] + tick_spacing, tick_spacing)
 
         # Set tick positions and formatters
         axes.set_xticks(longitude_ticks, crs=map_projection)
@@ -349,12 +343,19 @@ def setup_map(
         axes.xaxis.set_major_formatter(lon_formatter)
         axes.yaxis.set_major_formatter(lat_formatter)
 
-    # Set map extent if data is provided
+    # 只要传入经纬度数据就自动设置范围
+    # 范围必须在cartopy添加地图特征之后设置，因为添加特征可能会改变axes的范围
     if longitude_data is not None and latitude_data is not None:
-        lon_min, lon_max = np.nanmin(longitude_data), np.nanmax(longitude_data)
-        lat_min, lat_max = np.nanmin(latitude_data), np.nanmax(latitude_data)
-        axes.set_extent([lon_min, lon_max, lat_min, lat_max], crs=map_projection)
-
+        # 过滤掉NaN，避免极端值影响
+        lon_valid = np.asarray(longitude_data)[~np.isnan(longitude_data)]
+        lat_valid = np.asarray(latitude_data)[~np.isnan(latitude_data)]
+        if lon_valid.size > 0 and lat_valid.size > 0:
+            lon_min, lon_max = np.min(lon_valid), np.max(lon_valid)
+            lat_min, lat_max = np.min(lat_valid), np.max(lat_valid)
+            axes.set_extent([lon_min, lon_max, lat_min, lat_max], crs=map_projection)
+        else:
+            # 若全是NaN则不设置范围
+            pass
     return axes
 
 
@@ -379,14 +380,14 @@ class MidpointNormalize(mpl.colors.Normalize):
         # Use the clip parameter from initialization if not provided
         if clip is None:
             clip = self.clip
-            
+
         x, y = [self.vmin, self.vcenter, self.vmax], [0, 0.5, 1.0]
         result = np.interp(value, x, y)
-        
+
         # Apply clipping if requested
         if clip:
             result = np.clip(result, 0, 1)
-            
+
         return np.ma.masked_array(result)
 
     def inverse(self, value: np.ndarray) -> np.ndarray:
