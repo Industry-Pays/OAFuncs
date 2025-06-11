@@ -231,58 +231,7 @@ def setup_map(
     right_labels: bool = False,
     top_labels: bool = False,
 ) -> plt.Axes:
-    """Setup a complete cartopy map with customizable features.
-
-    Args:
-        axes (plt.Axes): The axes to setup as a map.
-        longitude_data (np.ndarray, optional): Array of longitudes to set map extent.
-        latitude_data (np.ndarray, optional): Array of latitudes to set map extent.
-        map_projection (ccrs.Projection, optional): Coordinate reference system. Defaults to PlateCarree.
-
-        show_land (bool, optional): Whether to show land features. Defaults to True.
-        show_ocean (bool, optional): Whether to show ocean features. Defaults to True.
-        show_coastline (bool, optional): Whether to show coastlines. Defaults to True.
-        show_borders (bool, optional): Whether to show country borders. Defaults to False.
-        land_color (str, optional): Color of land. Defaults to "lightgrey".
-        ocean_color (str, optional): Color of oceans. Defaults to "lightblue".
-        coastline_linewidth (float, optional): Line width for coastlines. Defaults to 0.5.
-
-        show_gridlines (bool, optional): Whether to show gridlines. Defaults to False.
-        longitude_ticks (list[float], optional): Longitude tick positions.
-        latitude_ticks (list[float], optional): Latitude tick positions.
-        tick_decimals (int, optional): Number of decimal places for tick labels. Defaults to 0.
-
-        grid_color (str, optional): Gridline color. Defaults to "k".
-        grid_alpha (float, optional): Gridline transparency. Defaults to 0.5.
-        grid_style (str, optional): Gridline style. Defaults to "--".
-        grid_width (float, optional): Gridline width. Defaults to 0.5.
-
-        show_labels (bool, optional): Whether to show coordinate labels. Defaults to True.
-        left_labels (bool, optional): Show labels on left side. Defaults to True.
-        bottom_labels (bool, optional): Show labels on bottom. Defaults to True.
-        right_labels (bool, optional): Show labels on right side. Defaults to False.
-        top_labels (bool, optional): Show labels on top. Defaults to False.
-
-    Returns:
-        plt.Axes: The configured map axes.
-
-    Examples:
-        >>> # Basic map setup
-        >>> ax = setup_map(ax)
-
-        >>> # Map with gridlines and custom extent
-        >>> ax = setup_map(ax, longitude_data=lon, latitude_data=lat, show_gridlines=True)
-
-        >>> # Customized map
-        >>> ax = setup_map(
-        ...     ax,
-        ...     show_gridlines=True,
-        ...     longitude_ticks=[0, 30, 60],
-        ...     latitude_ticks=[-30, 0, 30],
-        ...     land_color='wheat',
-        ...     ocean_color='lightcyan'
-        ... )
-    """
+    """Setup a complete cartopy map with customizable features."""
     from matplotlib import ticker as mticker
 
     # Add map features
@@ -327,14 +276,14 @@ def setup_map(
             current_extent = axes.get_extent(crs=map_projection)
             lon_range = current_extent[1] - current_extent[0]
             # Generate reasonable tick spacing
-            tick_spacing = 5 if lon_range <= 30 else (10 if lon_range <= 90 else 20)
+            tick_spacing = 1 if lon_range <= 10 else (5 if lon_range <= 30 else (10 if lon_range <= 90 else 20))
             longitude_ticks = np.arange(np.ceil(current_extent[0] / tick_spacing) * tick_spacing, current_extent[1] + tick_spacing, tick_spacing)
 
         if latitude_ticks is None:
             current_extent = axes.get_extent(crs=map_projection)
             lat_range = current_extent[3] - current_extent[2]
             # Generate reasonable tick spacing
-            tick_spacing = 5 if lat_range <= 30 else (10 if lat_range <= 90 else 20)
+            tick_spacing = 1 if lat_range <= 10 else (5 if lat_range <= 30 else (10 if lat_range <= 90 else 20))
             latitude_ticks = np.arange(np.ceil(current_extent[2] / tick_spacing) * tick_spacing, current_extent[3] + tick_spacing, tick_spacing)
 
         # Set tick positions and formatters
@@ -343,12 +292,18 @@ def setup_map(
         axes.xaxis.set_major_formatter(lon_formatter)
         axes.yaxis.set_major_formatter(lat_formatter)
 
+        # Control label visibility based on input parameters
+        axes.tick_params(axis="x", labelbottom=bottom_labels, labeltop=top_labels)
+        axes.tick_params(axis="y", labelleft=left_labels, labelright=right_labels)
+
     # 只要传入经纬度数据就自动设置范围
     # 范围必须在cartopy添加地图特征之后设置，因为添加特征可能会改变axes的范围
     if longitude_data is not None and latitude_data is not None:
         # 过滤掉NaN，避免极端值影响
-        lon_valid = np.asarray(longitude_data)[~np.isnan(longitude_data)]
-        lat_valid = np.asarray(latitude_data)[~np.isnan(latitude_data)]
+        lon_data = np.asarray(longitude_data)
+        lat_data = np.asarray(latitude_data)
+        lon_valid = lon_data[~np.isnan(lon_data)]
+        lat_valid = lat_data[~np.isnan(lat_data)]
         if lon_valid.size > 0 and lat_valid.size > 0:
             lon_min, lon_max = np.min(lon_valid), np.max(lon_valid)
             lat_min, lat_max = np.min(lat_valid), np.max(lat_valid)

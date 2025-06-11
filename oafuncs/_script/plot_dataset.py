@@ -91,7 +91,7 @@ def plot_2d(data: xr.DataArray, output_path: str, data_range: Optional[Tuple[flo
         lon_lat_ratio = np.abs(np.max(lon_range) - np.min(lon_range)) / (np.max(lat_range) - np.min(lat_range))
         figsize = (10, 10 / lon_lat_ratio)
         fig, ax = plt.subplots(figsize=figsize, subplot_kw={"projection": ccrs.PlateCarree()})
-        oafuncs.oa_draw.add_cartopy(ax, lon_range, lat_range)
+        oafuncs.oa_draw.setup_map(ax, lon_range, lat_range)
     else:
         fig, ax = plt.subplots(figsize=(10, 8))
 

@@ -3,8 +3,9 @@ from typing import List, Optional, Union
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
-__all__ = ["show", "to_color", "create", "get"]
+__all__ = ["show", "to_color", "create", "get", "random_color"]
 
 
 # ** 将cmap用填色图可视化（官网摘抄函数）
@@ -303,6 +304,14 @@ def get(colormap_name: Optional[str] = None, show_available: bool = False) -> Op
             print("Using rainbow as default.")
             return mpl.colormaps.get_cmap("rainbow")  # 默认返回 'rainbow'
 
+
+# ** 生成随机颜色
+def random_color():
+    """Generate a random color in hexadecimal format."""
+    r = random.randint(0, 255)
+    g = random.randint(0, 255)
+    b = random.randint(0, 255)
+    return f"#{r:02x}{g:02x}{b:02x}"
 
 if __name__ == "__main__":
     # ** 测试自制cmap
