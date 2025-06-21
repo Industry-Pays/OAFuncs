@@ -98,6 +98,18 @@ def _get_initial_data():
     data_info["hourly"]["dataset"]["GLBu0.08"]["version"]["93.0"]["classification"] = "var_different"
     data_info["hourly"]["dataset"]["GLBy0.08"]["version"]["93.0"]["classification"] = "var_year_different"
     data_info["hourly"]["dataset"]["ESPC_D"]["version"]["V02"]["classification"] = "single_var_year_different"
+    
+    # lon lat
+    data_info["hourly"]["dataset"]["GLBv0.08"]["version"]["53.X"]["lonlat"] = {'lon_min': -180.00, 'lon_max': 179.92, 'lat_min': -80.0, 'lat_max': 90.0}
+    data_info["hourly"]["dataset"]["GLBv0.08"]["version"]["56.3"]["lonlat"] = {'lon_min': -180.00, 'lon_max': 179.92, 'lat_min': -80.0, 'lat_max': 90.0}
+    data_info["hourly"]["dataset"]["GLBv0.08"]["version"]["57.2"]["lonlat"] = {'lon_min': -180.00, 'lon_max': 179.92, 'lat_min': -80.0, 'lat_max': 90.0}
+    data_info["hourly"]["dataset"]["GLBv0.08"]["version"]["92.8"]["lonlat"] = {'lon_min': 0.00, 'lon_max': 359.92, 'lat_min': -80.0, 'lat_max': 90.0}
+    data_info["hourly"]["dataset"]["GLBv0.08"]["version"]["57.7"]["lonlat"] = {'lon_min': -180.00, 'lon_max': 179.92, 'lat_min': -80.0, 'lat_max': 90.0}
+    data_info["hourly"]["dataset"]["GLBv0.08"]["version"]["92.9"]["lonlat"] = {'lon_min': 0.00, 'lon_max': 359.92, 'lat_min': -80.0, 'lat_max': 90.0}
+    data_info["hourly"]["dataset"]["GLBv0.08"]["version"]["93.0"]["lonlat"] = {'lon_min': 0.00, 'lon_max': 359.92, 'lat_min': -80.0, 'lat_max': 90.0}
+    data_info["hourly"]["dataset"]["GLBu0.08"]["version"]["93.0"]["lonlat"] = {'lon_min': 0.00, 'lon_max': 359.92, 'lat_min': -80.0, 'lat_max': 80.0}
+    data_info["hourly"]["dataset"]["GLBy0.08"]["version"]["93.0"]["lonlat"] = {'lon_min': 0.00, 'lon_max': 359.92, 'lat_min': -80.0, 'lat_max': 90.0}
+    data_info["hourly"]["dataset"]["ESPC_D"]["version"]["V02"]["lonlat"] = {'lon_min': 0.00, 'lon_max': 359.92, 'lat_min': -80.0, 'lat_max': 90.0}
 
     # download info
     # base url
@@ -851,6 +863,14 @@ def _get_submit_url_var(var, depth, level_num, lon_min, lon_max, lat_min, lat_ma
         which_mode = "level"
     else:
         which_mode = "full"
+    if lon_min == 0.0:
+        lon_min = data_info["hourly"]["dataset"][dataset_name]["version"][version_name]["lonlat"]["lon_min"]
+    if lon_max == 359.92:
+        lon_max = data_info["hourly"]["dataset"][dataset_name]["version"][version_name]["lonlat"]["lon_max"]
+    if lat_min == -80.0:
+        lat_min = data_info["hourly"]["dataset"][dataset_name]["version"][version_name]["lonlat"]["lat_min"]
+    if lat_max == 90.0:
+        lat_max = data_info["hourly"]["dataset"][dataset_name]["version"][version_name]["lonlat"]["lat_max"]
     query_dict = _get_query_dict(var, lon_min, lon_max, lat_min, lat_max, download_time, download_time_end, which_mode, depth, level_num)
     submit_url = _get_submit_url(dataset_name, version_name, var, ymdh_str, query_dict)
     return submit_url
@@ -1194,10 +1214,10 @@ if __name__ == "__main__":
         "start_time": "2018010100",
         "end_time": "2019063000",
         "output_dir": r"G:\Data\HYCOM\china_sea\hourly_24",
-        "lon_min": 105,
-        "lon_max": 135,
-        "lat_min": 10,
-        "lat_max": 45,
+        # "lon_min": 105,
+        # "lon_max": 135,
+        # "lat_min": 10,
+        # "lat_max": 45,
         "workers": 1,
         "overwrite": False,
         "depth": None,
