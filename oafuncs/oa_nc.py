@@ -1,7 +1,6 @@
 import os
 from typing import List, Optional, Tuple, Union
 
-import netCDF4 as nc
 import numpy as np
 import xarray as xr
 from rich import print
@@ -112,6 +111,7 @@ def rename(
     Example:
         >>> rename('file.nc', 'old_var', 'new_var')
     """
+    import netCDF4 as nc
     try:
         with nc.Dataset(file_path, "r+") as dataset:
             if old_name not in dataset.variables and old_name not in dataset.dimensions:
@@ -159,6 +159,7 @@ def check(
         return False
 
     try:
+        import netCDF4 as nc
         with nc.Dataset(file_path, "r") as ds_verify:
             if not ds_verify.variables:
                 if print_messages:

@@ -1,10 +1,9 @@
 from typing import Any, List, Union
 
 import numpy as np
-import salem
 import xarray as xr
 from rich import print
-from scipy.interpolate import interp1d
+
 
 __all__ = ["interp_along_dim", "interp_2d", "ensure_list", "mask_shapefile"]
 
@@ -59,6 +58,7 @@ def interp_along_dim(
         >>> result = interp_along_dim(target_coordinates, source_coordinates, source_data)
         >>> print(result)  # Expected output: [20.0, 30.0]
     """
+    from scipy.interpolate import interp1d
     target_coordinates = np.asarray(target_coordinates)
     if target_coordinates.ndim != 1:
         raise ValueError("[red]target_coordinates must be a 1D array.[/red]")
@@ -177,6 +177,7 @@ def mask_shapefile(
         >>> print(masked_data)  # Expected output: Masked DataArray
 
     """
+    import salem
     try:
         shp_f = salem.read_shapefile(shapefile_path)
         data_da = xr.DataArray(data_array, coords=[("latitude", latitudes), ("longitude", longitudes)])

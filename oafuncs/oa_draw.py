@@ -1,12 +1,9 @@
 import warnings
 
 import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import cv2
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
 from rich import print
 
 __all__ = ["fig_minus", "gif", "movie", "setup_map", "MidpointNormalize"]
@@ -74,7 +71,7 @@ def fig_minus(x_axis: plt.Axes = None, y_axis: plt.Axes = None, colorbar: mpl.co
     elif colorbar is not None:
         colorbar.set_ticklabels(out_ticks)
 
-    print("[green]Axis tick labels updated successfully.[/green]")
+    # print("[green]Axis tick labels updated successfully.[/green]")
     return target_object
 
 
@@ -148,6 +145,7 @@ def movie(image_files: list[str], output_video_path: str, fps: int) -> None:
         print("[red]Error:[/red] Image files list is empty.")
         return
 
+    import cv2
     # Read first image to get frame dimensions
     try:
         frame = cv2.imread(image_files[0])
@@ -235,6 +233,7 @@ def setup_map(
     from matplotlib import ticker as mticker
 
     # Add map features
+    import cartopy.feature as cfeature
     if show_land:
         axes.add_feature(cfeature.LAND, facecolor=land_color)
     if show_ocean:
@@ -245,6 +244,7 @@ def setup_map(
         axes.add_feature(cfeature.BORDERS, linewidth=coastline_linewidth, linestyle=":")
 
     # Setup coordinate formatting
+    from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
     lon_formatter = LongitudeFormatter(zero_direction_label=False, number_format=f".{tick_decimals}f")
     lat_formatter = LatitudeFormatter(number_format=f".{tick_decimals}f")
 
@@ -344,6 +344,23 @@ class MidpointNormalize(mpl.colors.Normalize):
             result = np.clip(result, 0, 1)
 
         return np.ma.masked_array(result)
+    
+    def ticks(self, num_ticks: int = 7) -> np.ndarray:
+        """Generate ticks for the normalization range, centered around vcenter."""
+        if self.vmin is None or self.vmax is None:
+            raise ValueError("vmin and vmax must be set to generate ticks.")
+
+        if num_ticks % 2 == 0:
+            num_ticks += 1
+
+        num_points_side = (num_ticks - 1) // 2 + 1
+
+        negative_ticks = np.linspace(self.vmin, self.vcenter, num_points_side)[:-1]
+        positive_ticks = np.linspace(self.vcenter, self.vmax, num_points_side)[1:]
+
+        ticks = np.concatenate([negative_ticks, [self.vcenter], positive_ticks])
+
+        return ticks
 
     def inverse(self, value: np.ndarray) -> np.ndarray:
         y, x = [self.vmin, self.vcenter, self.vmax], [0, 0.5, 1]

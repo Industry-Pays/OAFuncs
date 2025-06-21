@@ -1,7 +1,6 @@
 from typing import List, Optional, Union
 
 import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 import random
 
@@ -24,6 +23,7 @@ def show(
     colormaps : Union[str, mpl.colors.Colormap, List[Union[str, mpl.colors.Colormap]]]
         单个颜色映射或颜色映射列表；可以是名称字符串或颜色映射对象。
     """
+    import matplotlib.pyplot as plt
     if not isinstance(colormaps, list):
         colormaps = [colormaps]
 
