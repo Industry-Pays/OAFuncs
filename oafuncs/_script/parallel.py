@@ -155,7 +155,8 @@ class ParallelExecutor:
                 # 实时更新进度条
                 progress_bar.update(1)
                 progress_bar.refresh()
-        print('\n') # 结束进度条输出
+        # 完成后换行
+        print()
         return results
 
     def _chunked_execution(self, func: Callable, params: List[Tuple], chunk_size: int) -> List[Any]:
@@ -190,7 +191,8 @@ class ParallelExecutor:
                 # 更新分块进度
                 progress_bar.update(1)
                 progress_bar.refresh()
-        print('\n')
+        # 完成后换行
+        print()
         return results
 
     @staticmethod
