@@ -130,50 +130,18 @@ class ParallelExecutor:
             return self._chunked_execution(func, params, chunk_size)
 
         results = [None] * len(params)
-        
-        # 创建进度条 - 使用 range 作为占位符，手动控制进度
-        progress_bar = pbar(
-            iterable=range(len(params)),  # 使用 range 作为占位符
-            description="Parallel Tasks", 
-            total=len(params),
-            completed=0,
-            next_line=False,
-        )
-        # 手动开始任务
-        progress_bar.task.start()
-        
         with self._get_executor() as executor:
             futures = {executor.submit(func, *args): idx for idx, args in enumerate(params)}
-            
-            for future in as_completed(futures):
+            for future in pbar(as_completed(futures), "Parallel Tasks", total=len(futures)):
                 idx = futures[future]
                 try:
                     results[idx] = future.result(timeout=self.timeout_per_task)
                 except Exception as e:
                     results[idx] = self._handle_error(e, func, params[idx])
-                
-                # 实时更新进度条
-                progress_bar.update(1)
-                progress_bar.refresh()
-        print('\n') # 结束进度条输出
         return results
 
     def _chunked_execution(self, func: Callable, params: List[Tuple], chunk_size: int) -> List[Any]:
-        from oafuncs.oa_tool import pbar
-        
         results = []
-        chunk_count = (len(params) + chunk_size - 1) // chunk_size
-        
-        # 为分块执行创建进度条
-        progress_bar = pbar(
-            iterable=range(chunk_count),  # 使用 range 作为占位符
-            description="Parallel Chunks",
-            total=chunk_count,
-            completed=0,
-            next_line=False,
-        )
-        progress_bar.task.start()
-        
         with self._get_executor() as executor:
             futures = []
             for i in range(0, len(params), chunk_size):
@@ -186,11 +154,6 @@ class ParallelExecutor:
                 except Exception as e:
                     logging.error(f"Chunk failed: {e}")
                     results.extend([None] * chunk_size)
-                
-                # 更新分块进度
-                progress_bar.update(1)
-                progress_bar.refresh()
-        print('\n')
         return results
 
     @staticmethod

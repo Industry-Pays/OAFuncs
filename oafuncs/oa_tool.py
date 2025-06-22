@@ -37,7 +37,7 @@ class PEx(ParallelExecutor):
         self,
         max_workers: Optional[int] = None,
         chunk_size: Optional[int] = None,
-        mem_per_process: float = 1.5,  # 调大默认内存限制
+        mem_per_process: float = 3.0,  # 调大默认内存限制
         timeout_per_task: int = 7200,  # 延长默认超时时间
         max_retries: int = 5,  # 增加默认重试次数
         progress_callback: Optional[Callable[[int, int], None]] = None,
