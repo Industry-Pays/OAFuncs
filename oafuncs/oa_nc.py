@@ -207,14 +207,37 @@ def convert_longitude(
         >>> dataset = convert_longitude(dataset, longitude_name="lon", target_range=360)
     """
     if target_range not in [180, 360]:
-        raise ValueError("target_range value must be 180 or 360")
+        raise ValueError("target_range must be 180 or 360")
 
+    lon = dataset[longitude_name]
+    current_min, current_max = np.nanmin(lon), np.nanmax(lon)
+
+    # 检查是否已在目标范围
     if target_range == 180:
-        dataset = dataset.assign_coords({longitude_name: (dataset[longitude_name] + 180) % 360 - 180})
+        if -180 <= current_min and current_max <= 180:
+            return dataset  # 已在[-180,180]范围
     else:
-        dataset = dataset.assign_coords({longitude_name: (dataset[longitude_name] + 360) % 360})
+        if 0 <= current_min and current_max <= 360:
+            return dataset  # 已在[0,360]范围
 
-    return dataset.sortby(longitude_name)
+    # 执行转换（带边界平滑）
+    if target_range == 180:
+        # 将 >180 的值减去360，保持连续性
+        new_lon = xr.where(lon > 180, lon - 360, lon)
+        # 处理负值（如-200 -> 160）
+        new_lon = xr.where(new_lon < -180, new_lon + 360, new_lon)
+    else:
+        new_lon = lon % 360  # 自动处理负值
+
+    # 检查并处理重复坐标
+    if len(new_lon) != len(np.unique(new_lon)):
+        raise ValueError("转换导致经度坐标重复，请检查数据边界值")
+
+    # 仅当非单调时排序
+    if not new_lon.is_monotonic_increasing:
+        dataset = dataset.sortby(longitude_name)
+
+    return dataset.assign_coords({longitude_name: new_lon})
 
 
 def isel(

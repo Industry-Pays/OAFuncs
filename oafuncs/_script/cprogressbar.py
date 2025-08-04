@@ -189,7 +189,8 @@ class ColorProgressBar:
         self._is_jupyter = "ipykernel" in sys.modules
 
         # 输出样式
-        filled_list = ["▊", "█", "▓", "▒", "░", "#", "=", ">", "▌", "▍", "▎", "▏", "*"]
+        # filled_list = ["▊", "█", "▓", "▒", "░", "#", "=", ">", "▌", "▍", "▎", "▏", "*"]
+        filled_list = ["█", "▓", "▒", "░", "#", "=", ">", "*"]
         self.filled = random.choice(filled_list)
 
     def _generate_gradient(self) -> Optional[List[str]]:

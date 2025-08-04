@@ -313,6 +313,7 @@ def random_color():
     b = random.randint(0, 255)
     return f"#{r:02x}{g:02x}{b:02x}"
 
+
 if __name__ == "__main__":
     # ** 测试自制cmap
     colors = ["#C2B7F3", "#B3BBF2", "#B0CBF1", "#ACDCF0", "#A8EEED"]

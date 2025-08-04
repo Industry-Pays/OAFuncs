@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from rich import print
 
-__all__ = ["fig_minus", "gif", "movie", "setup_map", "MidpointNormalize"]
+__all__ = ["fig_minus", "gif", "movie", "setup_map", "ticks_symmetric"]
 
 warnings.filterwarnings("ignore")
 
@@ -247,6 +247,51 @@ def setup_map(
     from cartopy.mpl.ticker import LatitudeFormatter, LongitudeFormatter
     lon_formatter = LongitudeFormatter(zero_direction_label=False, number_format=f".{tick_decimals}f")
     lat_formatter = LatitudeFormatter(number_format=f".{tick_decimals}f")
+    
+        # 只要传入经纬度数据就自动设置范围
+    # 范围必须在cartopy添加地图特征之后设置，因为添加特征可能会改变axes的范围
+    if longitude_data is not None and latitude_data is not None:
+        # 过滤掉NaN，避免极端值影响
+        lon_data = np.asarray(longitude_data)
+        lat_data = np.asarray(latitude_data)
+        lon_valid = lon_data[~np.isnan(lon_data)]
+        lat_valid = lat_data[~np.isnan(lat_data)]
+        if lon_valid.size > 0 and lat_valid.size > 0:
+            lon_min, lon_max = np.min(lon_valid), np.max(lon_valid)
+            lat_min, lat_max = np.min(lat_valid), np.max(lat_valid)
+            axes.set_extent([lon_min, lon_max, lat_min, lat_max], crs=map_projection)
+        else:
+            # 若全是NaN则不设置范围
+            pass
+    
+    if show_labels:
+        # Add tick labels without gridlines
+        # Generate default tick positions based on current extent if not provided
+        if longitude_ticks is None:
+            current_extent = axes.get_extent(crs=map_projection)
+            lon_range = current_extent[1] - current_extent[0]
+            # Generate reasonable tick spacing
+            tick_spacing = 1 if lon_range <= 10 else (5 if lon_range <= 30 else (15 if lon_range <= 90 else (30 if lon_range <= 180 else 60)))
+            longitude_ticks = np.arange(np.ceil(current_extent[0] / tick_spacing) * tick_spacing, current_extent[1] + 0.1, tick_spacing)
+            # print(f"[green]Longitude ticks set to:[/green] {longitude_ticks}")
+
+        if latitude_ticks is None:
+            current_extent = axes.get_extent(crs=map_projection)
+            lat_range = current_extent[3] - current_extent[2]
+            # Generate reasonable tick spacing
+            tick_spacing = 1 if lat_range <= 10 else (5 if lat_range <= 30 else (15 if lat_range <= 90 else 30))
+            latitude_ticks = np.arange(np.ceil(current_extent[2] / tick_spacing) * tick_spacing, current_extent[3] + 0.1, tick_spacing)
+            # print(f"[green]Latitude ticks set to:[/green] {latitude_ticks}")
+
+        # Set tick positions and formatters
+        axes.set_xticks(longitude_ticks, crs=map_projection)
+        axes.set_yticks(latitude_ticks, crs=map_projection)
+        axes.xaxis.set_major_formatter(lon_formatter)
+        axes.yaxis.set_major_formatter(lat_formatter)
+
+        # Control label visibility based on input parameters
+        axes.tick_params(axis="x", labelbottom=bottom_labels, labeltop=top_labels)
+        axes.tick_params(axis="y", labelleft=left_labels, labelright=right_labels)
 
     # Handle gridlines and ticks
     if show_gridlines:
@@ -268,103 +313,51 @@ def setup_map(
             gl.xlocator = mticker.FixedLocator(np.array(longitude_ticks))
         if latitude_ticks is not None:
             gl.ylocator = mticker.FixedLocator(np.array(latitude_ticks))
-
-    elif show_labels:
-        # Add tick labels without gridlines
-        # Generate default tick positions based on current extent if not provided
-        if longitude_ticks is None:
-            current_extent = axes.get_extent(crs=map_projection)
-            lon_range = current_extent[1] - current_extent[0]
-            # Generate reasonable tick spacing
-            tick_spacing = 1 if lon_range <= 10 else (5 if lon_range <= 30 else (10 if lon_range <= 90 else 20))
-            longitude_ticks = np.arange(np.ceil(current_extent[0] / tick_spacing) * tick_spacing, current_extent[1] + tick_spacing, tick_spacing)
-
-        if latitude_ticks is None:
-            current_extent = axes.get_extent(crs=map_projection)
-            lat_range = current_extent[3] - current_extent[2]
-            # Generate reasonable tick spacing
-            tick_spacing = 1 if lat_range <= 10 else (5 if lat_range <= 30 else (10 if lat_range <= 90 else 20))
-            latitude_ticks = np.arange(np.ceil(current_extent[2] / tick_spacing) * tick_spacing, current_extent[3] + tick_spacing, tick_spacing)
-
-        # Set tick positions and formatters
-        axes.set_xticks(longitude_ticks, crs=map_projection)
-        axes.set_yticks(latitude_ticks, crs=map_projection)
-        axes.xaxis.set_major_formatter(lon_formatter)
-        axes.yaxis.set_major_formatter(lat_formatter)
-
-        # Control label visibility based on input parameters
-        axes.tick_params(axis="x", labelbottom=bottom_labels, labeltop=top_labels)
-        axes.tick_params(axis="y", labelleft=left_labels, labelright=right_labels)
-
-    # 只要传入经纬度数据就自动设置范围
-    # 范围必须在cartopy添加地图特征之后设置，因为添加特征可能会改变axes的范围
-    if longitude_data is not None and latitude_data is not None:
-        # 过滤掉NaN，避免极端值影响
-        lon_data = np.asarray(longitude_data)
-        lat_data = np.asarray(latitude_data)
-        lon_valid = lon_data[~np.isnan(lon_data)]
-        lat_valid = lat_data[~np.isnan(lat_data)]
-        if lon_valid.size > 0 and lat_valid.size > 0:
-            lon_min, lon_max = np.min(lon_valid), np.max(lon_valid)
-            lat_min, lat_max = np.min(lat_valid), np.max(lat_valid)
-            axes.set_extent([lon_min, lon_max, lat_min, lat_max], crs=map_projection)
-        else:
-            # 若全是NaN则不设置范围
-            pass
+            
     return axes
 
 
-class MidpointNormalize(mpl.colors.Normalize):
-    """Custom normalization class to center a specific value.
-
-    Args:
-        vmin (float, optional): Minimum data value. Defaults to None.
-        vmax (float, optional): Maximum data value. Defaults to None.
-        vcenter (float, optional): Center value for normalization. Defaults to 0.
-        clip (bool, optional): Whether to clip data outside the range. Defaults to False.
-
-    Example:
-        >>> norm = MidpointNormalize(vmin=-2, vmax=1, vcenter=0)
+def ticks_symmetric(vmin: float, vcenter: float, vmax: float, num: int = 7) -> np.ndarray:
     """
-
-    def __init__(self, vmin: float = None, vmax: float = None, vcenter: float = 0, clip: bool = False) -> None:
-        self.vcenter = vcenter
-        super().__init__(vmin, vmax, clip)
-
-    def __call__(self, value: np.ndarray, clip: bool = None) -> np.ma.MaskedArray:
-        # Use the clip parameter from initialization if not provided
-        if clip is None:
-            clip = self.clip
-
-        x, y = [self.vmin, self.vcenter, self.vmax], [0, 0.5, 1.0]
-        result = np.interp(value, x, y)
-
-        # Apply clipping if requested
-        if clip:
-            result = np.clip(result, 0, 1)
-
-        return np.ma.masked_array(result)
+    生成以指定中心点对称分布的刻度值
     
-    def ticks(self, num_ticks: int = 7) -> np.ndarray:
-        """Generate ticks for the normalization range, centered around vcenter."""
-        if self.vmin is None or self.vmax is None:
-            raise ValueError("vmin and vmax must be set to generate ticks.")
-
-        if num_ticks % 2 == 0:
-            num_ticks += 1
-
-        num_points_side = (num_ticks - 1) // 2 + 1
-
-        negative_ticks = np.linspace(self.vmin, self.vcenter, num_points_side)[:-1]
-        positive_ticks = np.linspace(self.vcenter, self.vmax, num_points_side)[1:]
-
-        ticks = np.concatenate([negative_ticks, [self.vcenter], positive_ticks])
-
-        return ticks
-
-    def inverse(self, value: np.ndarray) -> np.ndarray:
-        y, x = [self.vmin, self.vcenter, self.vmax], [0, 0.5, 1]
-        return np.interp(value, x, y)
+    参数:
+        vmin (float): 最小值
+        vcenter (float): 中心值
+        vmax (float): 最大值
+        num (int, optional): 期望的刻度数量（必须是奇数）。默认为7
+    
+    返回:
+        np.ndarray: 对称分布的刻度值数组
+    
+    异常:
+        ValueError: 如果输入值无效
+    
+    示例:
+        >>> ticks_symmetric(vmin=-10, vcenter=0, vmax=10, num=5)
+        array([-10.,  -5.,   0.,   5.,  10.])
+    """
+    # 验证输入参数
+    if vmin >= vcenter:
+        raise ValueError(f"vmin ({vmin}) must be less than vcenter ({vcenter})")
+    if vcenter >= vmax:
+        raise ValueError(f"vcenter ({vcenter}) must be less than vmax ({vmax})")
+    
+    # 确保刻度数量是奇数
+    if num % 2 == 0:
+        num += 1
+    
+    # 计算每侧的点数（包括中心点）
+    side_points = (num - 1) // 2 + 1
+    
+    # 生成左侧刻度（从最小值到中心值）
+    left_ticks = np.linspace(vmin, vcenter, side_points)[:-1]
+    
+    # 生成右侧刻度（从中心值到最大值）
+    right_ticks = np.linspace(vcenter, vmax, side_points)[1:]
+    
+    # 组合所有刻度
+    return np.concatenate([left_ticks, [vcenter], right_ticks])
 
 
 if __name__ == "__main__":

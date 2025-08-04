@@ -160,14 +160,18 @@ def move_file(source_pattern: str, destination: str) -> None:
             if dst_dir:
                 os.makedirs(dst_dir, exist_ok=True)
 
-            # Remove existing destination if it exists
-            if os.path.exists(dst_file):
-                if os.path.isdir(dst_file):
-                    shutil.rmtree(dst_file)
-                else:
-                    os.remove(dst_file)
-            
-            shutil.move(src_file, dst_file)
+            if os.path.exists(src_file):
+                # Remove existing destination if it exists
+                if os.path.exists(dst_file):
+                    if os.path.isdir(dst_file):
+                        shutil.rmtree(dst_file)
+                    else:
+                        os.remove(dst_file)
+                
+                shutil.move(src_file, dst_file)
+            else:
+                print(f"[yellow]Source file not found:[/yellow] [bold]{src_file}[/bold]")
+                continue
             print(f"[green]Successfully moved:[/green] [bold]{src_file}[/bold] -> [bold]{dst_file}[/bold]")
         except Exception as e:
             print(f"[red]Failed to move:[/red] [bold]{src_file}[/bold]. Error: {e}")
