@@ -81,9 +81,13 @@ def _calculate_scale_and_offset(data, dtype="int32"):
     if dtype == "int32":
         n = 32
         fill_value = np.iinfo(np.int32).min  # -2147483648
+        max_packed_value = np.iinfo(np.int32).max  # 2147483647
+        min_packed_value = np.iinfo(np.int32).min + 1  # -2147483647 (保留最小值作为填充值)
     elif dtype == "int16":
         n = 16
         fill_value = np.iinfo(np.int16).min  # -32768
+        max_packed_value = np.iinfo(np.int16).max  # 32767
+        min_packed_value = np.iinfo(np.int16).min + 1  # -32767 (保留最小值作为填充值)
     else:
         raise ValueError("Unsupported dtype. Supported types are 'int16' and 'int32'.")
 
@@ -93,8 +97,15 @@ def _calculate_scale_and_offset(data, dtype="int32"):
         valid_mask &= ~data.mask
 
     if np.any(valid_mask):
-        data_min = np.min(data[valid_mask])-1
-        data_max = np.max(data[valid_mask])+1
+        data_min = np.min(data[valid_mask])
+        data_max = np.max(data[valid_mask])
+        
+        # 添加一个小的缓冲以确保所有值都在范围内，但不要过大
+        data_range = data_max - data_min
+        if data_range > 0:
+            buffer = data_range * 1e-6  # 使用相对缓冲而不是绝对值1
+            data_min -= buffer
+            data_max += buffer
     else:
         data_min, data_max = 0, 1
 
@@ -103,7 +114,9 @@ def _calculate_scale_and_offset(data, dtype="int32"):
         scale_factor = 1.0
         add_offset = data_min
     else:
-        scale_factor = (data_max - data_min) / (2**n - 2)
+        # 使用可用的打包值范围计算scale_factor
+        packed_range = max_packed_value - min_packed_value
+        scale_factor = (data_max - data_min) / packed_range
         add_offset = (data_max + data_min) / 2.0
     return scale_factor, add_offset
 
@@ -141,14 +154,18 @@ def _data_to_scale_offset(data, scale, offset, dtype='int32'):
         # 只有掩码标记的区域视为无效
         valid_mask &= ~data.mask
 
-    result = data.copy()
+    # 初始化结果数组为填充值
+    result = np.full_like(data, fill_value, dtype=np_dtype)
+    
     if np.any(valid_mask):
-        # 反向映射时能还原原始值
+        # 标准的scale/offset转换公式：packed_value = (unpacked_value - add_offset) / scale_factor
         scaled = (data[valid_mask] - offset) / scale
+        # 四舍五入到最近的整数
         scaled = np.round(scaled).astype(np_dtype)
-        # clip到int32范围，保留最大范围供转换
-        scaled = np.clip(scaled, clip_min, clip_max)  # 不使用 -2147483648，保留做 _FillValue
+        # clip到整数范围，保留最大范围供转换
+        scaled = np.clip(scaled, clip_min, clip_max)  # 不使用最小值，保留做 _FillValue
         result[valid_mask] = scaled
+    
     return result
 
 
@@ -372,76 +389,6 @@ def save_to_nc(file, data, varname=None, coords=None, mode="w", convert_dtype='i
         _nan_to_fillvalue(file, fill_value)
     except Exception as e:
         raise RuntimeError(f"netCDF4 保存失败: {str(e)}") from e
-
-
-def _compress_netcdf(src_path, dst_path=None, tolerance=1e-10, preserve_mask_values=True):
-    """
-    压缩 NetCDF 文件，使用 scale_factor/add_offset 压缩数据。
-    若 dst_path 省略，则自动生成新文件名，写出后删除原文件并将新文件改回原名。
-    压缩后验证数据是否失真。
-
-    参数：
-      - src_path: 原始 NetCDF 文件路径
-      - dst_path: 压缩后的文件路径（可选）
-      - tolerance: 数据验证的允许误差范围（默认 1e-10）
-      - preserve_mask_values: 是否保留掩码区域的原始值（True）或将其替换为缺省值（False）
-    """
-    # 判断是否要替换原文件
-    delete_orig = dst_path is None
-    if delete_orig:
-        dst_path = src_path.replace(".nc", "_compress.nc")
-    # 打开原始文件并保存压缩文件
-    ds = xr.open_dataset(src_path)
-    save_to_nc(dst_path, ds, convert_dtype='int32',scale_offset_switch=True, compile_switch=True, preserve_mask_values=preserve_mask_values)
-    ds.close()
-
-    # 验证压缩后的数据是否失真
-    original_ds = xr.open_dataset(src_path)
-    compressed_ds = xr.open_dataset(dst_path)
-    # 更详细地验证数据
-    for var in original_ds.data_vars:
-        original_data = original_ds[var].values
-        compressed_data = compressed_ds[var].values
-        # 跳过非数值类型变量
-        if not np.issubdtype(original_data.dtype, np.number):
-            continue
-        # 获取掩码（如果存在）
-        original_mask = None
-        if hasattr(original_data, "mask") and np.ma.is_masked(original_data):  # 修正：确保是有效的掩码数组
-            original_mask = original_data.mask.copy()
-        # 检查有效数据是否在允许误差范围内
-        valid_mask = np.isfinite(original_data)
-        if original_mask is not None:
-            valid_mask &= ~original_mask
-        if np.any(valid_mask):
-            if np.issubdtype(original_data.dtype, np.floating):
-                diff = np.abs(original_data[valid_mask] - compressed_data[valid_mask])
-                max_diff = np.max(diff)
-                if max_diff > tolerance:
-                    print(f"警告: 变量 {var} 的压缩误差 {max_diff} 超出容许范围 {tolerance}")
-                    if max_diff > tolerance * 10:  # 严重偏差时抛出错误
-                        raise ValueError(f"变量 {var} 的数据在压缩后严重失真 (max_diff={max_diff})")
-            elif np.issubdtype(original_data.dtype, np.integer):
-                # 整数类型应该完全相等
-                if not np.array_equal(original_data[valid_mask], compressed_data[valid_mask]):
-                    raise ValueError(f"变量 {var} 的整数数据在压缩后不一致")
-        # 如果需要保留掩码区域值，检查掩码区域的值
-        if preserve_mask_values and original_mask is not None and np.any(original_mask):
-            # 确保掩码区域的原始值被正确保留
-            # 修正：掩码数组可能存在数据类型不匹配问题，添加安全检查
-            try:
-                mask_diff = np.abs(original_data[original_mask] - compressed_data[original_mask])
-                if np.any(mask_diff > tolerance):
-                    print(f"警告: 变量 {var} 的掩码区域数据在压缩后发生变化")
-            except Exception as e:
-                print(f"警告: 变量 {var} 的掩码区域数据比较失败: {str(e)}")
-    original_ds.close()
-    compressed_ds.close()
-
-    # 替换原文件
-    if delete_orig:
-        os.remove(src_path)
-        os.rename(dst_path, src_path)
 
 
 # 测试用例
