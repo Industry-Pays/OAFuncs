@@ -81,13 +81,9 @@ def _calculate_scale_and_offset(data, dtype="int32"):
     if dtype == "int32":
         n = 32
         fill_value = np.iinfo(np.int32).min  # -2147483648
-        max_packed_value = np.iinfo(np.int32).max  # 2147483647
-        min_packed_value = np.iinfo(np.int32).min + 1  # -2147483647 (保留最小值作为填充值)
     elif dtype == "int16":
         n = 16
         fill_value = np.iinfo(np.int16).min  # -32768
-        max_packed_value = np.iinfo(np.int16).max  # 32767
-        min_packed_value = np.iinfo(np.int16).min + 1  # -32767 (保留最小值作为填充值)
     else:
         raise ValueError("Unsupported dtype. Supported types are 'int16' and 'int32'.")
 
@@ -97,15 +93,8 @@ def _calculate_scale_and_offset(data, dtype="int32"):
         valid_mask &= ~data.mask
 
     if np.any(valid_mask):
-        data_min = np.min(data[valid_mask])
-        data_max = np.max(data[valid_mask])
-        
-        # 添加一个小的缓冲以确保所有值都在范围内，但不要过大
-        data_range = data_max - data_min
-        if data_range > 0:
-            buffer = data_range * 1e-6  # 使用相对缓冲而不是绝对值1
-            data_min -= buffer
-            data_max += buffer
+        data_min = np.min(data[valid_mask])-1
+        data_max = np.max(data[valid_mask])+1
     else:
         data_min, data_max = 0, 1
 
@@ -114,9 +103,7 @@ def _calculate_scale_and_offset(data, dtype="int32"):
         scale_factor = 1.0
         add_offset = data_min
     else:
-        # 使用可用的打包值范围计算scale_factor
-        packed_range = max_packed_value - min_packed_value
-        scale_factor = (data_max - data_min) / packed_range
+        scale_factor = (data_max - data_min) / (2**n - 2)
         add_offset = (data_max + data_min) / 2.0
     return scale_factor, add_offset
 
@@ -154,18 +141,14 @@ def _data_to_scale_offset(data, scale, offset, dtype='int32'):
         # 只有掩码标记的区域视为无效
         valid_mask &= ~data.mask
 
-    # 初始化结果数组为填充值
-    result = np.full_like(data, fill_value, dtype=np_dtype)
-    
+    result = data.copy()
     if np.any(valid_mask):
-        # 标准的scale/offset转换公式：packed_value = (unpacked_value - add_offset) / scale_factor
+        # 反向映射时能还原原始值
         scaled = (data[valid_mask] - offset) / scale
-        # 四舍五入到最近的整数
         scaled = np.round(scaled).astype(np_dtype)
-        # clip到整数范围，保留最大范围供转换
-        scaled = np.clip(scaled, clip_min, clip_max)  # 不使用最小值，保留做 _FillValue
+        # clip到int32范围，保留最大范围供转换
+        scaled = np.clip(scaled, clip_min, clip_max)  # 不使用 -2147483648，保留做 _FillValue
         result[valid_mask] = scaled
-    
     return result
 
 
@@ -389,6 +372,7 @@ def save_to_nc(file, data, varname=None, coords=None, mode="w", convert_dtype='i
         _nan_to_fillvalue(file, fill_value)
     except Exception as e:
         raise RuntimeError(f"netCDF4 保存失败: {str(e)}") from e
+
 
 
 # 测试用例

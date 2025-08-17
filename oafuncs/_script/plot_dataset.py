@@ -197,12 +197,12 @@ def select_colormap_and_levels(data_range: Tuple[float, float], plot_type: str) 
         num_levels = 128
 
     if data_range[0] * data_range[1] < 0:
-        cmap = oafuncs.oa_cmap.get("diverging_1")
+        cmap = oafuncs.oa_cmap.get(diverging_cmap)
         bdy = max(abs(data_range[0]), abs(data_range[1]))
         norm = mpl.colors.TwoSlopeNorm(vmin=-bdy, vcenter=0, vmax=bdy)
         levels = np.linspace(-bdy, bdy, num_levels)
     else:
-        cmap = oafuncs.oa_cmap.get("cool_1") if data_range[0] < 0 else oafuncs.oa_cmap.get("warm_1")
+        cmap = oafuncs.oa_cmap.get(negative_cmap) if data_range[0] < 0 else oafuncs.oa_cmap.get(positive_cmap)
         norm = mpl.colors.Normalize(vmin=data_range[0], vmax=data_range[1])
         levels = np.linspace(data_range[0], data_range[1], num_levels)
 
@@ -320,9 +320,14 @@ def get_xyzt_names(ds_in, xyzt_dims):
     return x_dim, y_dim, z_dim, t_dim
 
 
-def func_plot_dataset(ds_in: Union[xr.Dataset, xr.DataArray], output_dir: str, xyzt_dims: Tuple[str, str, str, str] = None, plot_type: str = "contourf", fixed_colorscale: bool = False) -> None:
+def func_plot_dataset(ds_in: Union[xr.Dataset, xr.DataArray], output_dir: str, cmap='diverging_3', pcmap='warm_3', ncmap='cool_3', xyzt_dims: Tuple[str, str, str, str] = None, plot_type: str = "contourf", fixed_colorscale: bool = False) -> None:
     """Plot variables from a NetCDF file and save the plots to the specified directory."""
     os.makedirs(output_dir, exist_ok=True)
+    
+    global diverging_cmap, positive_cmap, negative_cmap
+    diverging_cmap = cmap
+    positive_cmap = pcmap
+    negative_cmap = ncmap
 
     # Main processing function
     try:

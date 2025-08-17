@@ -270,6 +270,9 @@ def draw(
     output_directory: Optional[str] = None,
     dataset: Optional[xr.Dataset] = None,
     file_path: Optional[str] = None,
+    cmap='diverging_3',
+    pcmap='warm_3',
+    ncmap='cool_3',
     dims_xyzt: Union[List[str], Tuple[str, str, str, str]] = None,
     plot_style: str = "contourf",
     use_fixed_colorscale: bool = False,
@@ -296,18 +299,18 @@ def draw(
         raise ValueError("dimensions must be a list or tuple")
 
     if dataset is not None:
-        func_plot_dataset(dataset, output_directory, dims_xyzt, plot_style, use_fixed_colorscale)
+        func_plot_dataset(dataset, output_directory, cmap, pcmap, ncmap, dims_xyzt, plot_style, use_fixed_colorscale)
     elif file_path is not None:
         if check(file_path):
             ds = xr.open_dataset(file_path)
-            func_plot_dataset(ds, output_directory, dims_xyzt, plot_style, use_fixed_colorscale)
+            func_plot_dataset(ds, output_directory, cmap, pcmap, ncmap, dims_xyzt, plot_style, use_fixed_colorscale)
         else:
             print(f"[red]Invalid file: {file_path}[/red]")
     else:
         print("[red]No dataset or file provided.[/red]")
 
 
-def compress(src_path, dst_path=None,convert_dtype='int16'):
+def compress(src_path, dst_path=None,convert_dtype='int32'):
     """
     压缩 NetCDF 文件，使用 scale_factor/add_offset 压缩数据。
     若 dst_path 省略，则自动生成新文件名，写出后删除原文件并将新文件改回原名。
