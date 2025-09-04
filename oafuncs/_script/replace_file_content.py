@@ -106,10 +106,10 @@ def replace_direct_content(source_file, target_dir, content_dict, key_value=Fals
         with open(target_file, "w") as f:
             f.write(content)
 
-        print(f"[green]已将内容替换到新文件：{target_file}[/green]")
+        print(f"[green]Content replaced and saved to new file: {target_file}[/green]")
         return True
     except Exception as e:
-        print(f"[red]替换内容时出错：{str(e)}[/red]")
+        print(f"[red]Error replacing content: {str(e)}[/red]")
         return False
 
 

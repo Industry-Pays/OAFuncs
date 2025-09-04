@@ -15,10 +15,11 @@ def save(
     variable_name: Optional[str] = None,
     coordinates: Optional[dict] = None,
     write_mode: str = "w",
-    convert_dtype: str = "int32",
+    convert_dtype: str = "int16",
     use_scale_offset: bool = True,
     use_compression: bool = True,
     preserve_mask_values: bool = True,
+    missing_value: Optional[Union[float, int]] = None,
 ) -> None:
     """
     Write data to a NetCDF file.
@@ -42,7 +43,7 @@ def save(
     """
     from ._script.netcdf_write import save_to_nc
 
-    save_to_nc(file_path, data, variable_name, coordinates, write_mode, convert_dtype,use_scale_offset, use_compression, preserve_mask_values)
+    save_to_nc(file_path, data, variable_name, coordinates, write_mode, convert_dtype,use_scale_offset, use_compression, preserve_mask_values, missing_value)
     print(f"[green]Data successfully saved to {file_path}[/green]")
 
 
@@ -310,7 +311,7 @@ def draw(
         print("[red]No dataset or file provided.[/red]")
 
 
-def compress(src_path, dst_path=None,convert_dtype='int32'):
+def compress(src_path, dst_path=None, convert_dtype='int16'):
     """
     压缩 NetCDF 文件，使用 scale_factor/add_offset 压缩数据。
     若 dst_path 省略，则自动生成新文件名，写出后删除原文件并将新文件改回原名。

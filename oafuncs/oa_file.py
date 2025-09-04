@@ -418,6 +418,9 @@ def replace_content(source_file: Union[str, os.PathLike], replacements: Dict[str
 
     if target_dir is None:
         target_dir = os.path.dirname(source_file)
+        # If source_file is just a filename without path, use current working directory
+        if not target_dir:
+            target_dir = os.getcwd()
     replace_direct_content(source_file, target_dir, replacements, key_value=use_key_value, new_name=new_filename)
 
 

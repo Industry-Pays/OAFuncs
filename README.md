@@ -12,8 +12,6 @@ Just for the convenience of daily use, some complex operations are integrated in
 The code will be optimized and updated from time to time, with additions, deletions, or modifications…
 
 Existing functions will not be completely removed, they might just have a different function name, or the parameter passing might have been optimized…
-
-Note: If there are any requirements, you can email to liukun0312@stu.ouc.edu.cn. Within my capabilities, I can consider implementing them.
 ```
 
 ## PyPI
@@ -26,6 +24,11 @@ https://pypi.org/project/oafuncs
 
 ```html
 https://github.com/Industry-Pays/OAFuncs
+```
+
+## Download information
+```html
+https://pypistats.org/packages/oafuncs
 ```
 
 ## Example
@@ -129,3 +132,6 @@ query()
 <img title="" src="./oafuncs/data_store/OAFuncs.png" alt="">
 
 <img title="OAFuncs" src="https://raw.githubusercontent.com/Industry-Pays/OAFuncs/main/oafuncs/_data/oafuncs.png" alt="OAFuncs">
+
+## Wiki
+更多内容，查看[wiki](https://opendeep.wiki/Industry-Pays/OAFuncs/introduction)
