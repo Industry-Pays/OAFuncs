@@ -134,4 +134,4 @@ query()
 <img title="OAFuncs" src="https://raw.githubusercontent.com/Industry-Pays/OAFuncs/main/oafuncs/_data/oafuncs.png" alt="OAFuncs">
 
 ## Wiki
-更多内容，查看[wiki](https://opendeep.wiki/Industry-Pays/OAFuncs/introduction)
+更多内容，查看[wiki_old](https://opendeep.wiki/Industry-Pays/OAFuncs/introduction) or [wiki_new](https://deepwiki.com/Industry-Pays/OAFuncs)
